@@ -1,2 +1,4 @@
-database_backend/node_modules
+database/node_modules
+server/node_modules
 .env
+text

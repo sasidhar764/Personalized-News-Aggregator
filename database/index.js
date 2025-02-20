@@ -1,0 +1,44 @@
+require("dotenv").config();
+const express = require('express')
+const mongoose = require('mongoose')
+const User = require('./models/user.model')
+const userRoute = require('./routes/user.route')
+const cors = require('cors')
+
+const app = express()
+const PORT = process.env.PORT || 7000;
+let server;
+
+app.use(express.json())
+app.use(express.urlencoded({extended : false}))
+
+app.use(cors())
+
+app.use('/api/users', userRoute)
+
+// app.use('/api/users/reset', () => {console.log("Password reset")})
+
+app.get('/', (req, res) => {
+    res.send("Cloud Mongo DB Connection")
+})
+
+mongoose.connect('mongodb+srv://user:Yjf0CelLvYQOF50K@backenddb.lxmhq.mongodb.net/nodedb?retryWrites=true&w=majority&appName=BackendDB')
+.then(() => {
+  server = app.listen(PORT, () => {console.log(`Server running on port ${PORT}`)})
+  console.log('Connected to MongoDB!')
+})
+
+process.on('SIGINT', async () => {
+
+  try {
+      await mongoose.connection.close();
+      console.log("\nMongoDB connection closed.");
+  } catch (err) {
+      console.error("\nError closing MongoDB connection:", err);
+  }
+
+  server.close(() => {
+      console.log("Server shutting down.");
+      process.exit(0);
+  });
+});

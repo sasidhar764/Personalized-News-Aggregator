@@ -48,6 +48,20 @@ const updateUser = async (req, res) => {
     }
 }
 
+const updatePassword = async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        const user = await User.findOneAndUpdate({ email }, { password }, { new: true });
+        if(!user)
+        {
+            return res.status(404)
+        }
+        res.json({message: "Password updated successfully", user})
+    } catch (error) {
+        res.status(500)
+    }
+}
+
 const deleteUser = async (req, res) => {
     try {
         const un = req.params.username
@@ -68,5 +82,6 @@ module.exports = {
     createUser,
     getUser,
     updateUser,
-    deleteUser
+    deleteUser,
+    updatePassword
 }
