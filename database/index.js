@@ -16,8 +16,6 @@ app.use(cors())
 
 app.use('/api/users', userRoute)
 
-// app.use('/api/users/reset', () => {console.log("Password reset")})
-
 app.get('/', (req, res) => {
     res.send("Cloud Mongo DB Connection")
 })

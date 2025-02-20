@@ -65,22 +65,29 @@ const loginUser = async (req, res) => {
     return res.status(401).json({ error: "Incorrect Password" });
   }
 
-  // Generate JWT token
+  // Generate JWT token - now including role
   const token = jwt.sign(
-    { username: user.username, email: user.email },
+    { 
+      username: user.username, 
+      email: user.email,
+      role: user.role || 'user' // Include role in token, default to 'user' if not present
+    },
     JWT_SECRET,
     { expiresIn: "12h" }
   );
 
   return res.json({
     message: "Login successful",
-    user: { username: user.username },
+    user: { 
+      username: user.username,
+      role: user.role || 'user' // Include role in response
+    },
     token,
   });
 };
 
 const registerUser = async (req, res) => {
-  const { username, email, password } = req.body;
+  const { username, email, password, role } = req.body;
   if (!username || !password || !email) {
     return res.status(400).json({ error: "All details are required" });
   }
@@ -100,7 +107,14 @@ const registerUser = async (req, res) => {
   // Hash the password before storing
   const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
-  const newUser = { username, email, password: hashedPassword };
+  // Create new user with role (defaults to 'user' if not specified)
+  const newUser = { 
+    username, 
+    email, 
+    password: hashedPassword,
+    role: role || 'user' // Add role field
+  };
+  
   const addedUser = await addUser(newUser);
 
   if (!addedUser) {
@@ -109,7 +123,10 @@ const registerUser = async (req, res) => {
 
   return res.status(201).json({
     message: "User registered successfully",
-    user: { username: newUser.username },
+    user: { 
+      username: newUser.username,
+      role: newUser.role
+    },
   });
 };
 
