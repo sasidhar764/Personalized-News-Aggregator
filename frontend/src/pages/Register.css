@@ -1,0 +1,182 @@
+/* Modal Overlay */
+.signup-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 3000;
+  backdrop-filter: blur(6px);
+  transition: opacity 0.3s ease-in-out;
+}
+
+/* Modal Box */
+.signup-container {
+  background: #ffffff;
+  padding: 2.5rem;
+  border-radius: 8px;
+  box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.5);
+  height: auto;
+  width: 420px;
+  max-width: 90%;
+  position: relative;
+  font-family: 'Inter', sans-serif;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Close Button - Icon */
+.close-button {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s ease-in-out;
+}
+
+.close-button svg {
+  width: 24px;
+  height: 24px;
+  fill: #888;
+}
+
+.close-button:hover svg {
+  fill: #c00;
+  transform: scale(1.1);
+}
+
+/* Headline */
+.signup-container h2 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #222;
+  text-align: center;
+  margin-bottom: 1.2rem;
+}
+
+/* Form Group */
+.formgroup {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+/* Input Fields */
+.signup-container input,
+.signup-container select {
+  width: 100%;
+  padding: 0.85rem;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1rem;
+  background: #f9f9f9;
+  transition: all 0.3s ease-in-out;
+  appearance: none;
+}
+
+/* Focus Effects */
+.signup-container input:focus,
+.signup-container select:focus {
+  border-color: #0056b3;
+  background: #fff;
+  outline: none;
+  box-shadow: 0 0 5px rgba(0, 86, 179, 0.2);
+}
+
+/* Password Input Styling */
+.pasword-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.pasword-input {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.password-input input {
+  width: 100%;
+  padding-right: 40px; /* Space for eye icon */
+}
+
+/* Eye Icon */
+.eye-iicon {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #777;
+  font-size: 1.5rem; /* Make the eye icon larger */
+}
+
+.eye-icon:hover {
+  color: #333;
+}
+
+/* Dropdown Styling with Bigger Arrow */
+.signup-container select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding-right: 50px; /* More space for the bigger arrow */
+  background: #f9f9f9 url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%23777'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd'/%3E%3C/svg%3E") no-repeat;
+  background-position: right 14px center;
+  background-size: 24px; /* Increased arrow size */
+  cursor: pointer;
+}
+
+/* Error & Success Messages */
+.error-message {
+  background: #ffcccc;
+  color: #c00;
+  padding: 10px;
+  border-radius: 5px;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.success-message {
+  background: #d4edda;
+  color: #155724;
+  padding: 10px;
+  border-radius: 5px;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+/* Submit Button */
+.signup-button {
+  width: 100%;
+  padding: 0.9rem;
+  background: #1aa57a;
+  color: white;
+  font-size: 1.1rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: background 0.3s ease-in-out;
+}
+
+.signup-button:hover {
+  background: black;
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+  .signup-container {
+    width: 90%;
+    padding: 2rem;
+  }
+}

@@ -41,7 +41,7 @@ const updateUser = async (req, res) => {
         {
             return res.status(404)
         }
-        const updateduser = await User.findOne({username : un})
+        const updateduser = await User.findOne({username : req.body.username})
         res.json(updateduser)
     } catch (error) {
         res.status(500)

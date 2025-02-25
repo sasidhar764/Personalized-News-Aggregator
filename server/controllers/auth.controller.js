@@ -1,50 +1,16 @@
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
-const axios = require("axios");
 const bcrypt = require("bcrypt");
 const nodemailer = require("nodemailer");
+const { 
+  fetchUsers, 
+  addUser, 
+  updateUserDetails,
+  updateUserPassword 
+} = require("../services/auth.services");
 
-const DATABASE_URL_USERS = "http://localhost:7000/api/users";
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
-const SALT_ROUNDS = 10;
-
 const CLIENT_HOST = process.env.CLIENT_HOST || "localhost";
-
-// Fetch all users
-const fetchUsers = async () => {
-  try {
-    const response = await axios.get(DATABASE_URL_USERS);
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching users:", error);
-    return [];
-  }
-};
-
-// Add a new user
-const addUser = async (user) => {
-  try {
-    const response = await axios.post(DATABASE_URL_USERS, user);
-    return response.data;
-  } catch (error) {
-    console.error("Error adding user:", error);
-    return null;
-  }
-};
-
-// Updating Password
-const updateUser = async (email, newPassword) => {
-  try {
-    const response = await axios.put(`${DATABASE_URL_USERS}/reset-password`, {
-      email,
-      password: newPassword,
-    });
-    return response.data;
-  } catch (error) {
-    console.error("Error updating password:", error);
-    return null;
-  }
-};
 
 const loginUser = async (req, res) => {
   const { username, password } = req.body;
@@ -59,78 +25,67 @@ const loginUser = async (req, res) => {
     return res.status(401).json({ error: "Invalid Username or Password" });
   }
 
-  // Compare hashed password
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) {
     return res.status(401).json({ error: "Incorrect Password" });
   }
 
-  // Generate JWT token - now including role
   const token = jwt.sign(
-    { 
-      username: user.username, 
-      email: user.email,
-      role: user.role || 'user' // Include role in token, default to 'user' if not present
-    },
+    { username: user.username, email: user.email, role: user.role || "user" },
     JWT_SECRET,
     { expiresIn: "12h" }
   );
 
   return res.json({
     message: "Login successful",
-    user: { 
+    user: {
       username: user.username,
-      role: user.role || 'user' // Include role in response
+      role: user.role, email: user.email,
+      preferredCategory: user.preferredCategory,
+      language: user.language,
+      country: user.country,
     },
     token,
   });
 };
 
 const registerUser = async (req, res) => {
-  const { username, email, password, role } = req.body;
+  const { username, email, password, role, preferredCategory, country, language } = req.body;
   if (!username || !password || !email) {
     return res.status(400).json({ error: "All details are required" });
   }
 
   const users = await fetchUsers();
 
-  const existingUserEmail = users.find((u) => u.email === email);
-  if (existingUserEmail) {
+  if (users.some((u) => u.email === email)) {
     return res.status(409).json({ error: "Email ID already exists" });
   }
-
-  const existingUserName = users.find((u) => u.username === username);
-  if (existingUserName) {
+  if (users.some((u) => u.username === username)) {
     return res.status(409).json({ error: "Username already exists" });
   }
 
-  // Hash the password before storing
-  const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
-
-  // Create new user with role (defaults to 'user' if not specified)
-  const newUser = { 
-    username, 
-    email, 
+  const hashedPassword = await bcrypt.hash(password, 10);
+  const newUser = {
+    username,
+    email,
     password: hashedPassword,
-    role: role || 'user' // Add role field
+    role: role || "user",
+    preferredCategory,
+    country,
+    language,
   };
-  
-  const addedUser = await addUser(newUser);
 
+  const addedUser = await addUser(newUser);
   if (!addedUser) {
     return res.status(500).json({ error: "Failed to register user" });
   }
 
   return res.status(201).json({
     message: "User registered successfully",
-    user: { 
-      username: newUser.username,
-      role: newUser.role
-    },
+    user: { username: newUser.username, role: newUser.role },
   });
 };
 
-// Forgot Password - Send Reset Link
 const forgotPassword = async (req, res) => {
   const { email } = req.body;
   const users = await fetchUsers();
@@ -140,10 +95,8 @@ const forgotPassword = async (req, res) => {
     return res.status(404).json({ error: "User not found" });
   }
 
-  // Generate reset token (valid for 15 minutes)
   const resetToken = jwt.sign({ email }, JWT_SECRET, { expiresIn: "15m" });
 
-  // Send email with reset link
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
@@ -151,11 +104,23 @@ const forgotPassword = async (req, res) => {
 
   const resetLink = `http://${CLIENT_HOST}:3000/reset-password?token=${resetToken}`;
   const mailOptions = {
-    from: process.env.EMAIL_USER,
-    to: email,
-    subject: "Password Reset Request",
-    text: `Click the link to reset your password: ${resetLink}`,
-  };
+  from: process.env.EMAIL_USER,
+  to: email,
+  subject: "Password Reset Request",
+  html: `
+    <div style="font-family: Arial, sans-serif; text-align: center; padding: 20px; background-color: #f4f4f4;">
+      <div style="max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0px 0px 10px rgba(0,0,0,0.1);">
+        <h2 style="color: #333;">Password Reset Request</h2>
+        <p style="color: #555;">Click the button below to reset your password:</p>
+        <a href="${resetLink}" style="display: inline-block; padding: 10px 20px; background: #007bff; color: white; text-decoration: none; border-radius: 5px; margin-top: 10px;">
+          Reset Password
+        </a>
+        <p style="color: #777; font-size: 12px; margin-top: 20px;">If you didn't request this, please ignore this email.</p>
+      </div>
+    </div>
+  `,
+};
+
 
   try {
     await transporter.sendMail(mailOptions);
@@ -165,7 +130,6 @@ const forgotPassword = async (req, res) => {
   }
 };
 
-// Reset Password Function
 const resetPassword = async (req, res) => {
   const { token, newPassword } = req.body;
 
@@ -177,11 +141,8 @@ const resetPassword = async (req, res) => {
     const decoded = jwt.verify(token, JWT_SECRET);
     const email = decoded.email;
 
-    // Hash the new password
-    const hashedPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
-
-    // Update user password
-    const updatedUser = await updateUser(email, hashedPassword);
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    const updatedUser = await updateUserPassword(email, hashedPassword);
 
     if (!updatedUser) {
       return res.status(500).json({ error: "Failed to reset password" });
@@ -193,4 +154,78 @@ const resetPassword = async (req, res) => {
   }
 };
 
-module.exports = { loginUser, registerUser, forgotPassword, resetPassword };
+const updateUser = async (req, res) => {
+  const { token, username, email, password, preferredCategory, country, language } = req.body;
+
+  if (!token) {
+    return res.status(400).json({ error: "Authentication token is required" });
+  }
+
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const currentUserName = decoded.username;
+    
+    const users = await fetchUsers();
+    const existingUser = users.find((u) => u.username === currentUserName);
+
+    if (!existingUser) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Check if new username or email already exists
+    if (username && username !== existingUser.username && users.some((u) => u.username === username)) {
+      return res.status(409).json({ error: "Username already exists" });
+    }
+    
+    if (email && email !== existingUser.email && users.some((u) => u.email === email)) {
+      return res.status(409).json({ error: "Email ID already exists" });
+    }
+
+    // Prepare update data
+    const updateData = {
+      username: username || existingUser.username,
+      email: email || existingUser.email,
+      preferredCategory: preferredCategory || existingUser.preferredCategory,
+      country: country || existingUser.country,
+      language: language || existingUser.language,
+    };
+
+    // Handle password update separately if provided
+    if (password) {
+      updateData.password = await bcrypt.hash(password, 10);
+    }
+
+    const updatedUser = await updateUserDetails(currentUserName, updateData);
+
+    if (!updatedUser) {
+      return res.status(500).json({ error: "Failed to update user details" });
+    }
+
+    // Generate new token if email or username was updated
+    const newToken = (email || username) ? jwt.sign(
+      { 
+        username: updateData.username, 
+        email: updateData.email, 
+        role: existingUser.role 
+      },
+      JWT_SECRET,
+      { expiresIn: "12h" }
+    ) : null;
+
+    return res.json({ 
+      message: "User details updated successfully",
+      token: newToken || token
+    });
+  } catch (error) {
+    return res.status(400).json({ error: "Invalid or expired token" });
+  }
+};
+
+module.exports = { 
+  loginUser, 
+  registerUser, 
+  forgotPassword, 
+  resetPassword, 
+  updateUser 
+};

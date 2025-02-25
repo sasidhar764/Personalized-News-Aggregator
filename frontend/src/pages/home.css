@@ -1,0 +1,153 @@
+/* General styles */
+body, html {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  font-family: "Poppins", sans-serif;
+  background: #ffffff;
+  color: #333;
+  box-sizing: border-box;
+  overflow: hidden; /* Prevents scrollbars */
+}
+
+/* Navbar */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background: #1a1a1a;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 70px;
+  z-index: 1000;
+  box-sizing: border-box;
+}
+
+.logo {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #ffffff;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.nav-right {
+  display: flex;
+  gap: 1rem;
+}
+
+.nav-button {
+  text-decoration: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  font-weight: bold;
+  transition: 0.3s;
+  text-transform: uppercase;
+}
+
+.sign-in {
+  color: #ffffff;
+  border: 2px solid #1aa57a;
+  background: transparent;
+}
+
+.sign-in:hover {
+  background: #1aa57a;
+  color: #1a1a1a;
+}
+
+.sign-up {
+  background: #1aa57a;
+  color: #1a1a1a;
+  border: 2px solid #1aa57a;
+}
+
+.sign-up:hover {
+  background: #1aa57a;
+}
+
+/* Main Content */
+.magazine-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100vw;
+  height: calc(100vh - 70px); /* Full viewport minus navbar */
+  position: absolute;
+  top: 70px;
+  left: 0;
+  overflow: hidden;
+}
+
+/* Text Section */
+.magazine-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 4rem;
+  max-width: 50%;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.magazine-text h1 {
+  font-size: 3rem;
+  font-weight: bold;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.magazine-text h1:nth-child(2) {
+  color: #1aa57a; /* Green text */
+}
+
+.magazine-text p {
+  font-size: 1.2rem;
+  color: #333;
+  font-weight: 500;
+  margin-top: 1rem;
+}
+
+/* Call-to-Action Button */
+/* .view-catalog {
+  display: inline-block;
+  margin-top: 2rem;
+  padding: 14px 24px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  border-radius: 40px;
+  background: #20c997;
+  color: #ffffff;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.view-catalog:hover {
+  background: #1aa57a;
+} */
+
+/* Image Section */
+.magazine-images {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.magazine-images img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Ensures the image fully fills its section */
+  border-radius: 0;
+}

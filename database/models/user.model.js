@@ -22,6 +22,18 @@ const userSchema = new mongoose.Schema(
             type: String,
             enum: ['user', 'admin'],
             default: 'user'
+        },
+        preferredCategory: {
+            type: String,
+            default: 'General' // Default category if not provided
+        },
+        country: {
+            type: String,
+            default: 'India' // Default country if not provided
+        },
+        language: {
+            type: String,
+            default: 'English' // Default language if not provided
         }
     },
     {
@@ -31,4 +43,4 @@ const userSchema = new mongoose.Schema(
 
 const User = mongoose.model("User", userSchema);
 
-module.exports = User
+module.exports = User;

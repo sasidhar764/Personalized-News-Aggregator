@@ -1,0 +1,112 @@
+import { useState } from "react";
+  import axios from "axios";
+  import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+  import { faEye, faEyeSlash, faTimes } from "@fortawesome/free-solid-svg-icons";
+  import "./Register.css";
+
+  function Register({ onClose }) {
+    const [formData, setFormData] = useState({
+      username: "",
+      email: "",
+      password: "",
+      preferredCategory: "",
+      country: "",
+      language: ""
+    });
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState("");
+    const [success, setSuccess] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+
+    const categoryOptions = ["Sports", "Business", "Technology", "Entertainment", "Health", "Science", "Politics"];
+    const countryOptions = ["India", "USA", "UK", "Canada", "Australia", "Japan", "Germany"];
+    const languageOptions = ["English", "Hindi", "Spanish", "French", "German", "Japanese", "Chinese"];
+
+    const handleChange = (e) => {
+      setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    const handleSubmit = async (e) => {
+      e.preventDefault();
+      setIsLoading(true);
+      setError("");
+
+      try {
+        const response = await axios.post(
+          `${process.env.REACT_APP_SERVER_URL}/register`,
+          JSON.stringify(formData),
+          { headers: { "Content-Type": "application/json" } }
+        );
+
+        console.log("Registration successful:", response.data);
+        setSuccess(true);
+        setTimeout(() => {
+          onClose(); // Close modal after success
+        }, 2000);
+      } catch (error) {
+        setError(error.response?.data?.message || "Registration failed. Please try again.");
+        console.error("Error:", error.response ? error.response.data : error.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    return (
+      <div className="signup-modal">
+        <div className="signup-container">
+          {/* Close Button - Icon */}
+          <button className="close-button" onClick={onClose}>
+            <FontAwesomeIcon icon={faTimes} />
+          </button>
+
+          <h2>SIGN UP</h2>
+          <p><center>Create your account</center></p>
+
+          {error && <div className="error-message">{error}</div>}
+          {success && <div className="success-message">Registration successful! Closing...</div>}
+
+          <form onSubmit={handleSubmit}>
+            <div className="input-container">
+              <div className="formgroup">
+                <input type="text" placeholder="Username" name="username" value={formData.username} onChange={handleChange} required />
+              </div>
+              <div className="formgroup">
+                <input type="email" placeholder="Email Id" name="email" value={formData.email} onChange={handleChange} required />
+              </div>
+              <div className="formgroup pasword-group">
+                <div className="pasword-input">
+                  <input type={showPassword ? "text" : "password"} placeholder="Password" name="password" value={formData.password} onChange={handleChange} required />
+                  <span className="eye-iicon" onClick={() => setShowPassword(!showPassword)}>
+                    <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
+                  </span>
+                </div>
+              </div>
+              <div className="formgroup">
+                <select name="preferredCategory" value={formData.preferredCategory} onChange={handleChange} required>
+                  <option value="" disabled>Select your preferred category</option>
+                  {categoryOptions.map((category) => <option key={category} value={category}>{category}</option>)}
+                </select>
+              </div>
+              <div className="formgroup">
+                <select name="country" value={formData.country} onChange={handleChange} required>
+                  <option value="" disabled>Select your country</option>
+                  {countryOptions.map((country) => <option key={country} value={country}>{country}</option>)}
+                </select>
+              </div>
+              <div className="formgroup">
+                <select name="language" value={formData.language} onChange={handleChange} required>
+                  <option value="" disabled>Select your preferred language</option>
+                  {languageOptions.map((language) => <option key={language} value={language}>{language}</option>)}
+                </select>
+              </div>
+            </div>
+            <button type="submit" disabled={isLoading || success} className="signup-button">
+              {isLoading ? "Creating Account..." : "Sign Up"}
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  export default Register;
