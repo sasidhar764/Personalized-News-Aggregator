@@ -27,6 +27,26 @@ const AdminPage = () => {
     }
   };
 
+  const handleDelete = async (username) => {
+    if (window.confirm(`Are you sure you want to delete ${username}?`)) {
+      try {
+        const response = await fetch(`${process.env.REACT_APP_SERVER_URL}/admin/deleteuser/${username}`, {
+          method: 'DELETE',
+        });
+        console.log(response);
+
+        if (!response.ok) {
+          throw new Error('Failed to delete user');
+        }
+
+        // Update state to remove deleted user from the list
+        setUsers(users.filter(user => user.username !== username));
+      } catch (error) {
+        alert(error.message);
+      }
+    }
+  };
+
   const filteredUsers = users.filter(user => 
     user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -41,17 +61,17 @@ const AdminPage = () => {
       <div className="header flex justify-between items-center mb-4">
         <h2 className="text-xl font-semibold">USER MANAGEMENT DASHBOARD</h2>
         <div className="search-container">
-            <Search className="search-icon" size={22} />
-            <input
-                type="text"
-                placeholder="Search"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="search-input"
-            />
+          <Search className="search-icon" size={22} />
+          <input
+            type="text"
+            placeholder="Search"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="search-input"
+          />
         </div>
-
       </div>
+
       <div className="overflow-x-auto">
         <table className="w-full border-collapse border border-gray-300">
           <thead className="bg-gray-200">
@@ -73,7 +93,10 @@ const AdminPage = () => {
                 <td className="border border-gray-300 px-4 py-2">{user.country}</td>
                 <td className="border border-gray-300 px-4 py-2">{user.language}</td>
                 <td className="border border-gray-300 px-4 py-2 text-center">
-                  <button onClick={() => (console.log("Delete : ",user.username))} className="text-red-500 hover:text-red-700 px-2">
+                  <button 
+                    onClick={() => handleDelete(user.username)} 
+                    className="text-red-500 hover:text-red-700 px-2"
+                  >
                     Delete
                   </button>
                 </td>

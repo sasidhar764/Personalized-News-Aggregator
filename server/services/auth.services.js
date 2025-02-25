@@ -1,10 +1,7 @@
-// auth.services.js
 require("dotenv").config();
 const axios = require("axios");
-const bcrypt = require("bcrypt");
 
 const DATABASE_URL_USERS = "http://localhost:7000/api/users";
-const SALT_ROUNDS = 10;
 
 // Fetch all users
 const fetchUsers = async () => {
@@ -64,10 +61,23 @@ const updateUserPassword = async (email, newPassword) => {
   }
 };
 
+// Delete user by username
+const deleteUser = async (username) => {
+  console.log(`Deleting user: ${username}`);
+  try {
+    const response = await axios.delete(`${DATABASE_URL_USERS}/${username}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    return null;
+  }
+};
+
 module.exports = { 
   fetchUsers, 
   fetchAllUsers, 
   addUser, 
   updateUserDetails,
-  updateUserPassword 
+  updateUserPassword,
+  deleteUser 
 };

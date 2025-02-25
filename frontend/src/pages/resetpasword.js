@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import "./resetpasword.css"
+import "./resetpasword.css";
 
 function ResetPassword() {
   const [searchParams] = useSearchParams();
@@ -11,6 +11,8 @@ function ResetPassword() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
   const token = searchParams.get('token');
   const navigate = useNavigate();
 
@@ -21,42 +23,66 @@ function ResetPassword() {
     });
   };
 
+  const validatePassword = (password) => {
+    const validations = {
+      length: password.length >= 8,
+      uppercase: /[A-Z]/.test(password),
+      lowercase: /[a-z]/.test(password),
+      number: /[0-9]/.test(password),
+      special: /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password),
+    };
+
+    const failedValidations = [];
+    if (!validations.length) failedValidations.push("at least 8 characters");
+    if (!validations.uppercase) failedValidations.push("at least one uppercase letter");
+    if (!validations.lowercase) failedValidations.push("at least one lowercase letter");
+    if (!validations.number) failedValidations.push("at least one number");
+    if (!validations.special) failedValidations.push("at least one special character");
+
+    return {
+      isValid: Object.values(validations).every(value => value === true),
+      failedValidations
+    };
+  };
+
+  const closeAlert = () => {
+    setShowAlert(false);
+    setAlertMessage('');
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     
-    // Password validation
+    // Check if passwords match
     if (formData.newPassword !== formData.confirmPassword) {
       setError('Passwords do not match');
       return;
     }
     
-    if (formData.newPassword.length < 6) {
-      setError('Password must be at least 6 characters long');
+    // Validate password complexity
+    const { isValid, failedValidations } = validatePassword(formData.newPassword);
+    
+    if (!isValid) {
+      const message = `Your password must include ${failedValidations.join(", ")}.`;
+      setAlertMessage(message);
+      setShowAlert(true);
       return;
     }
     
     setIsLoading(true);
 
-    console.log("hi",JSON.stringify({
-      token,
-      newPassword: formData.newPassword,
-    }))
-
-    console.log("Token from URL:", token);
-    
     try {
-        const response = await fetch(`${process.env.REACT_APP_SERVER_URL}/reset-password`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            token,
-            newPassword: formData.newPassword,
-          }),
-        });
-      
+      const response = await fetch(`${process.env.REACT_APP_SERVER_URL}/reset-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          token,
+          newPassword: formData.newPassword,
+        }),
+      });
       
       if (response.ok) {
         setSuccess(true);
@@ -87,6 +113,17 @@ function ResetPassword() {
         </div>
       )}
       
+      {/* Password Requirements Alert */}
+      {showAlert && (
+        <div className="password-alert-overlay">
+          <div className="password-alert">
+            <h3>Password Requirements</h3>
+            <p>{alertMessage}</p>
+            <button onClick={closeAlert}>OK</button>
+          </div>
+        </div>
+      )}
+      
       {!success && (
         <form onSubmit={handleSubmit}>
           <div className="form-group">
@@ -99,7 +136,6 @@ function ResetPassword() {
               onChange={handleChange}
               placeholder="Enter new password"
               required
-              minLength="6"
             />
           </div>
           

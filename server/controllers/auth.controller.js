@@ -1,3 +1,4 @@
+//auth.controller.js
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
@@ -6,7 +7,8 @@ const {
   fetchUsers, 
   addUser, 
   updateUserDetails,
-  updateUserPassword 
+  updateUserPassword,
+  deleteUser
 } = require("../services/auth.services");
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
@@ -222,10 +224,32 @@ const updateUser = async (req, res) => {
   }
 };
 
+// Delete User
+const deleteUserController = async (req, res) => {
+  console.log("Deleting user", req.params);
+  const { username } = req.params;
+
+  if (!username) {
+    return res.status(400).json({ error: "Username is required for deletion" });
+  }
+
+  try {
+    const deletedUser = await deleteUser(username);
+    if (!deletedUser) {
+      return res.status(500).json({ error: "Failed to delete user" });
+    }
+
+    return res.json({ message: "User deleted successfully" });
+  } catch (error) {
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
 module.exports = { 
   loginUser, 
   registerUser, 
   forgotPassword, 
   resetPassword, 
-  updateUser 
+  updateUser,
+  deleteUserController
 };

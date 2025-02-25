@@ -173,10 +173,89 @@
   background: black;
 }
 
+/* Disabled Button State */
+.signup-button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+/* Password Alert Overlay */
+.password-alert-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 4000; /* Higher than signup-modal to ensure it's on top */
+  backdrop-filter: blur(3px);
+}
+
+/* Password Alert Box */
+.password-alert {
+  background-color: white;
+  padding: 25px;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  max-width: 400px;
+  width: 90%;
+  text-align: center;
+  font-family: 'Inter', sans-serif;
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+/* Alert Title */
+.password-alert h3 {
+  margin-top: 0;
+  color: #c00;
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin-bottom: 15px;
+}
+
+/* Alert Content */
+.password-alert p {
+  color: #333;
+  font-size: 1rem;
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+
+/* Alert Button */
+.password-alert button {
+  background: #1aa57a;
+  color: white;
+  border: none;
+  padding: 10px 30px;
+  border-radius: 25px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 1rem;
+  transition: background 0.3s ease-in-out;
+}
+
+.password-alert button:hover {
+  background: black;
+}
+
+/* Keyframes for fading in animation */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 /* Responsive Design */
 @media (max-width: 480px) {
   .signup-container {
     width: 90%;
     padding: 2rem;
+  }
+  
+  .password-alert {
+    width: 85%;
+    padding: 20px;
   }
 }
