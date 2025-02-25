@@ -39,6 +39,21 @@ const getNews = async (req, res) => {
     }
 }
 
+const getHeadlines = async (req, res) => {
+    try {
+        
+        let headlines = `https://gnews.io/api/v4/top-headlines?category=general&lang=en&apikey=${GNEWS_API_KEY}`;
+
+        let response = await axios.get(headlines);
+
+        res.json(response.data);
+    } catch (error) {
+        console.error("Error fetching news:", error.message);
+        res.status(500).json({ error: "Failed to fetch news." });
+    }
+}
+
 module.exports = {
-    getNews
+    getNews,
+    getHeadlines
 }
