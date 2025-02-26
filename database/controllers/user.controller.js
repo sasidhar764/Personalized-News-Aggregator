@@ -11,6 +11,9 @@ const getUsers = async (req, res) => {
 
 const createUser = async (req, res) => {
     try {
+        if (req.body.preferredCategory && !Array.isArray(req.body.preferredCategory)) {
+            req.body.preferredCategory = [req.body.preferredCategory]; // Convert to array if it's a single value
+        }
         const user = await User.create(req.body)
         res.json(user)
     } catch (error) {

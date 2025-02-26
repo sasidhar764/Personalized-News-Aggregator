@@ -9,7 +9,7 @@ function Register({ onClose }) {
     username: "",
     email: "",
     password: "",
-    preferredCategory: "",
+    preferredCategory: [], // Array for multiple selections
     country: "",
     language: ""
   });
@@ -19,6 +19,7 @@ function Register({ onClose }) {
   const [showPassword, setShowPassword] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
+  const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
 
   const categoryOptions = ["Sports", "Business", "Technology", "Entertainment", "Health", "Science", "Politics"];
   const countryOptions = ["India", "USA", "UK", "Canada", "Australia", "Japan", "Germany"];
@@ -50,6 +51,22 @@ function Register({ onClose }) {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const toggleCategorySelection = (category) => {
+    if (formData.preferredCategory.includes(category)) {
+      // Remove category if already selected
+      setFormData({
+        ...formData,
+        preferredCategory: formData.preferredCategory.filter((item) => item !== category)
+      });
+    } else {
+      // Add category if not already selected
+      setFormData({
+        ...formData,
+        preferredCategory: [...formData.preferredCategory, category]
+      });
+    }
+  };
+
   const closeAlert = () => {
     setShowAlert(false);
     setAlertMessage("");
@@ -57,6 +74,13 @@ function Register({ onClose }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Basic validation
+    if (formData.preferredCategory.length === 0) {
+      setAlertMessage("Please select at least one category.");
+      setShowAlert(true);
+      return;
+    }
     
     // Validate password before submission
     const { isValid, failedValidations } = validatePassword(formData.password);
@@ -109,7 +133,7 @@ function Register({ onClose }) {
         {showAlert && (
           <div className="password-alert-overlay">
             <div className="password-alert">
-              <h3>Password Requirements</h3>
+              <h3>Requirements</h3>
               <p>{alertMessage}</p>
               <button onClick={closeAlert}>OK</button>
             </div>
@@ -140,10 +164,32 @@ function Register({ onClose }) {
               </div>
             </div>
             <div className="formgroup">
-              <select name="preferredCategory" value={formData.preferredCategory} onChange={handleChange} required>
-                <option value="" disabled>Select your preferred category</option>
-                {categoryOptions.map((category) => <option key={category} value={category}>{category}</option>)}
-              </select>
+              <div className="custom-dropdown">
+                <div 
+                  className="dropdown-selector" 
+                  onClick={() => setCategoryDropdownOpen(!categoryDropdownOpen)}
+                >
+                  {formData.preferredCategory.length === 0 
+                    ? "Select your preferred categories" 
+                    : `${formData.preferredCategory.length} categories selected`}
+                </div>
+                {categoryDropdownOpen && (
+                  <div className="dropdown-menu">
+                    {categoryOptions.map((category) => (
+                      <div 
+                        key={category} 
+                        className={`dropdown-item ${formData.preferredCategory.includes(category) ? 'selected' : ''}`} 
+                        onClick={() => toggleCategorySelection(category)}
+                      >
+                        <span className="checkbox">
+                          {formData.preferredCategory.includes(category) && '✓'}
+                        </span>
+                        {category}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
             <div className="formgroup">
               <select name="country" value={formData.country} onChange={handleChange} required>

@@ -124,7 +124,90 @@
   color: #333;
 }
 
-/* Dropdown Styling with Bigger Arrow */
+/* Custom Dropdown Styling */
+/* Fix alignment for custom dropdown */
+.custom-dropdown {
+  position: relative;
+  width: 100%;
+}
+
+.dropdown-selector {
+  width: 100%;
+  padding: 0.85rem;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1rem;
+  background: #f9f9f9 url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%23777'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd'/%3E%3C/svg%3E") no-repeat;
+  background-position: right 14px center;
+  background-size: 24px;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  user-select: none;
+  color: #555;
+  box-sizing: border-box;
+  height: 48px; /* Match the height of your other inputs */
+  display: flex;
+  align-items: center;
+}
+
+.dropdown-selector:hover {
+  background-color: #f0f0f0;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  max-height: 200px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 100;
+  margin-top: 2px;
+}
+
+.dropdown-item {
+  padding: 10px 15px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.dropdown-item:hover {
+  background: #f5f5f5;
+}
+
+.dropdown-item.selected {
+  background: #e8f4f0;
+  color: #1aa57a;
+  font-weight: 500;
+}
+
+.checkbox {
+  width: 18px;
+  height: 18px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  margin-right: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #1aa57a;
+  font-weight: bold;
+  background: white;
+}
+
+.dropdown-item.selected .checkbox {
+  background: #1aa57a;
+  border-color: #1aa57a;
+  color: white;
+}
+
+/* Normal Dropdown Styling */
 .signup-container select {
   appearance: none;
   -webkit-appearance: none;
