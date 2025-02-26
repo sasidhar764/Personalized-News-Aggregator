@@ -226,7 +226,6 @@ const updateUser = async (req, res) => {
 
 // Delete User
 const deleteUserController = async (req, res) => {
-  console.log("Deleting user", req.params);
   const { username } = req.params;
 
   if (!username) {

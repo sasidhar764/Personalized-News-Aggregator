@@ -1,12 +1,14 @@
 import { useState } from "react";
-import "./updateuser.css"; // Import the new CSS file
+import "./updateuser.css";
 
 const CategoryPreferences = ({ userDetails, onUpdateSuccess, onClose }) => {
   const [formData, setFormData] = useState({
     username: userDetails?.username || "",
     email: userDetails?.email || "",
     password: "",
-    preferredCategory: userDetails?.preferredCategory || "",
+    preferredCategory: userDetails?.preferredCategory ? 
+      (Array.isArray(userDetails.preferredCategory) ? 
+        userDetails.preferredCategory : [userDetails.preferredCategory]) : [],
     country: userDetails?.country || "",
     language: userDetails?.language || "" 
   });
@@ -14,6 +16,7 @@ const CategoryPreferences = ({ userDetails, onUpdateSuccess, onClose }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
 
   const categoryOptions = ["Sports", "Business", "Technology", "Entertainment", "Health", "Science", "Politics"];
   const countryOptions = ["India", "USA", "UK", "Canada", "Australia", "Japan", "Germany"];
@@ -23,6 +26,46 @@ const CategoryPreferences = ({ userDetails, onUpdateSuccess, onClose }) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
+
+  const toggleCategorySelection = (category) => {
+    if (formData.preferredCategory.includes(category)) {
+      // Remove category if already selected
+      setFormData({
+        ...formData,
+        preferredCategory: formData.preferredCategory.filter((item) => item !== category)
+      });
+    } else {
+      // Add category if not already selected
+      setFormData({
+        ...formData,
+        preferredCategory: [...formData.preferredCategory, category]
+      });
+    }
+  };
+
+  const toggleCategoryDropdown = () => {
+    setCategoryDropdownOpen(!categoryDropdownOpen);
+  };
+
+  // Close dropdown when clicking outside
+  const handleClickOutside = (e) => {
+    if (!e.target.closest('.category-dropdown')) {
+      setCategoryDropdownOpen(false);
+    }
+  };
+  
+  // Add event listener when dropdown is open
+  useState(() => {
+    if (categoryDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    } else {
+      document.removeEventListener('mousedown', handleClickOutside);
+    }
+    
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [categoryDropdownOpen]);
 
   const handleUpdate = async (e) => {
     e.preventDefault();
@@ -43,7 +86,7 @@ const CategoryPreferences = ({ userDetails, onUpdateSuccess, onClose }) => {
       username: formData.username,
       email: formData.email || null,
       password: formData.password || null,
-      preferredCategory: formData.preferredCategory || null,
+      preferredCategory: formData.preferredCategory.length > 0 ? formData.preferredCategory : null,
       country: formData.country || null,
       language: formData.language || null,
       token: token
@@ -104,13 +147,31 @@ const CategoryPreferences = ({ userDetails, onUpdateSuccess, onClose }) => {
         </div>
 
         <div className="form-group">
-          <label>Preferred Category:</label>
-          <select name="preferredCategory" value={formData.preferredCategory} onChange={handleInputChange} disabled={isLoading}>
-            <option value="">Select Category</option>
-            {categoryOptions.map((category) => (
-              <option key={category} value={category}>{category}</option>
-            ))}
-          </select>
+          <label>Preferred Categories:</label>
+          <div className="category-dropdown">
+            <div className="dropdown-header" onClick={toggleCategoryDropdown}>
+              {formData.preferredCategory.length > 0 
+                ? formData.preferredCategory.join(", ")
+                : "Select Categories"}
+            </div>
+            
+            {categoryDropdownOpen && (
+              <div className="dropdown-menu">
+                {categoryOptions.map((category) => (
+                  <div 
+                    key={category} 
+                    className={`dropdown-item ${formData.preferredCategory.includes(category) ? 'selected' : ''}`} 
+                    onClick={() => toggleCategorySelection(category)}
+                  >
+                    <span className="checkbox">
+                      {formData.preferredCategory.includes(category) && '✓'}
+                    </span>
+                    {category}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="form-group">

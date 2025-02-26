@@ -25,7 +25,7 @@ const userSchema = new mongoose.Schema(
         },
         preferredCategory: {
             type: [String], // Accepts an array of strings
-            default: ['General'], // Default category if not provided
+            default: [], // Default category if not provided
         },
         country: {
             type: String,

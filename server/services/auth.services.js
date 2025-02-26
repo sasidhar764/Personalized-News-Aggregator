@@ -25,6 +25,18 @@ const fetchAllUsers = async (req, res) => {
   }
 };
 
+const fetchAllUsersAdmin = async (req, res) => {
+  try {
+    const users = await fetchUsers(); // Fetch all users
+    const filteredUsers = users.filter(user => user.role === "user");
+    res.json(filteredUsers);
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    res.status(500).json({ error: "Error fetching users" });
+  }
+};
+
+
 // Add a new user
 const addUser = async (user) => {
   try {
@@ -63,7 +75,6 @@ const updateUserPassword = async (email, newPassword) => {
 
 // Delete user by username
 const deleteUser = async (username) => {
-  console.log(`Deleting user: ${username}`);
   try {
     const response = await axios.delete(`${DATABASE_URL_USERS}/${username}`);
     return response.data;
@@ -79,5 +90,6 @@ module.exports = {
   addUser, 
   updateUserDetails,
   updateUserPassword,
-  deleteUser 
+  deleteUser,
+  fetchAllUsersAdmin
 };
