@@ -48,18 +48,18 @@ function Login({ onClose, onForgotPassword }) {
   };
 
   return (
-    <div className="login-overlay">
-      <div className="login-modal">
+    <div className="login-overlay_1">
+      <div className="login-modal_1">
         {/* Close button */}
-        <button className="close-button" onClick={onClose}>X</button>
+        <button className="close-button_1" onClick={onClose}>X</button>
 
         {/* Login Heading */}
-        <h2>LOGIN</h2>
-        <p className="welcome-text">Welcome to Newsphere!</p>
+        <h2 className="login-heading_1">LOGIN</h2>
+        <p className="welcome-text_1">Welcome to Newsphere!</p>
 
         {/* Login Form */}
         <form onSubmit={handleSubmit}>
-        <div className="form-group">
+        <div className="form-group_1">
           <label htmlFor="username"></label>
           <input
             type="text"
@@ -70,11 +70,12 @@ function Login({ onClose, onForgotPassword }) {
             onChange={handleChange}
             required
             autoComplete="username"
+            className="large-input_1"
           />
         </div>
 
-          <div className="form-group password-group">
-            <div className="password-input">
+          <div className="form-group_1 password-group_1">
+            <div className="password-input_1">
               <input 
                 type={showPassword ? "text" : "password"} 
                 name="password" 
@@ -82,25 +83,26 @@ function Login({ onClose, onForgotPassword }) {
                 value={formData.password} 
                 onChange={handleChange} 
                 required 
+                className="large-input_1"
               />
-              <span className="eye-icon" onClick={() => setShowPassword(!showPassword)}>
+              <span className="eye-icon_1" onClick={() => setShowPassword(!showPassword)}>
                 <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
               </span>
             </div>
 
             {/* Forgot Password (Text Link) */}
-            <p className="forgot-password" onClick={onForgotPassword}>
+            <p className="forgot-password_1" onClick={onForgotPassword}>
               Forgot password?
             </p>
           </div>
 
-          <button type="submit" className="login-button" disabled={isLoading}>
+          <button type="submit" className="login-button_1" disabled={isLoading}>
             {isLoading ? "Logging in..." : "Log in"}
           </button>
         </form>
 
         {/* Display error message */}
-        {error && <p className="error-message">{error}</p>}
+        {error && <p className="error-message_1">{error}</p>}
       </div>
     </div>
   );

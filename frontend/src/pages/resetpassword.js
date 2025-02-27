@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import "./resetpasword.css";
+import "./resetpassword.css";
 
 function ResetPassword() {
   const [searchParams] = useSearchParams();
@@ -54,13 +54,11 @@ function ResetPassword() {
     e.preventDefault();
     setError('');
     
-    // Check if passwords match
     if (formData.newPassword !== formData.confirmPassword) {
       setError('Passwords do not match');
       return;
     }
     
-    // Validate password complexity
     const { isValid, failedValidations } = validatePassword(formData.newPassword);
     
     if (!isValid) {
@@ -86,7 +84,6 @@ function ResetPassword() {
       
       if (response.ok) {
         setSuccess(true);
-        // Redirect to login page after 3 seconds
         setTimeout(() => {
           navigate('/');
         }, 3000);
@@ -103,20 +100,19 @@ function ResetPassword() {
   };
 
   return (
-    <div className="reset-password-container">
+    <div className="reset-password-container_rp">
       <h2>Reset Your Password</h2>
       
-      {error && <div className="error-message">{error}</div>}
+      {error && <div className="error-message_rp">{error}</div>}
       {success && (
-        <div className="success-message">
+        <div className="success-message_rp">
           Password reset successfully! Redirecting to home page...
         </div>
       )}
       
-      {/* Password Requirements Alert */}
       {showAlert && (
-        <div className="password-alert-overlay">
-          <div className="password-alert">
+        <div className="password-alert-overlay_rp">
+          <div className="password-alert_rp">
             <h3>Password Requirements</h3>
             <p>{alertMessage}</p>
             <button onClick={closeAlert}>OK</button>
@@ -126,7 +122,7 @@ function ResetPassword() {
       
       {!success && (
         <form onSubmit={handleSubmit}>
-          <div className="form-group">
+          <div className="form-group_rp">
             <label htmlFor="newPassword">New Password</label>
             <input
               type="password"
@@ -139,7 +135,7 @@ function ResetPassword() {
             />
           </div>
           
-          <div className="form-group">
+          <div className="form-group_rp">
             <label htmlFor="confirmPassword">Confirm Password</label>
             <input
               type="password"
@@ -154,7 +150,7 @@ function ResetPassword() {
           
           <button 
             type="submit" 
-            className="reset-button"
+            className="reset-button_rp"
             disabled={isLoading}
           >
             {isLoading ? 'Resetting...' : 'Reset Password'}

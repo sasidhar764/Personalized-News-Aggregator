@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import Login from "./login";
 import Register from "./Register";
-import ForgotPassword from "./forgotpasword";
+import ForgotPassword from "./forgotpassword";
 import "./home.css";
 
 function Home() {
@@ -23,9 +23,9 @@ function Home() {
       </nav>
       <div className="magazine-section">
         <div className="magazine-text">
-          <h1>Thousands of newspapers and magazines.</h1>
-          <h1>One <span style={{ color: "#20c997" }}>subscription.</span></h1>
-          <p>Access <strong>more than </strong> the top publications from around the globe.</p>
+          <h1>Thousands of newsarticles and magazines.</h1>
+          <h1>One <span style={{ color: "#20c997" }}>Website.</span></h1>
+          <p>Access <strong>more than 100</strong> the top publications from around the globe.</p>
         </div>
         <div className="magazine-images">
           <img src="./image.png" alt="Magazine" />

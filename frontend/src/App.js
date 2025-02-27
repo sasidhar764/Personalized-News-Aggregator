@@ -3,8 +3,8 @@ import Home from "./pages/home";
 import Login from "./pages/login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/dashboard";
-import ForgotPassword from "./pages/forgotpasword";
-import ResetPassword from "./pages/resetpasword";
+import ForgotPassword from "./pages/forgotpassword";
+import ResetPassword from "./pages/resetpassword";
 import AdminPage from "./pages/adminpage";
 import ProtectedRoute from "./protectedroute";
 
