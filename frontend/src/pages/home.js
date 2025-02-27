@@ -23,12 +23,12 @@ function Home() {
       </nav>
       <div className="magazine-section">
         <div className="magazine-text">
-          <h1>Thousands of newsarticles and magazines.</h1>
+          <h1>Thousands of News Articles and Magazines.</h1>
           <h1>One <span style={{ color: "#20c997" }}>Website.</span></h1>
-          <p>Access <strong>more than 100</strong> the top publications from around the globe.</p>
+          <p>Access <strong>more than 100</strong> top publications from around the globe.</p>
         </div>
         <div className="magazine-images">
-          <img src="./image.png" alt="Magazine" />
+          <img src="./image_1.png" alt="Magazine" />
         </div>
       </div>
 
