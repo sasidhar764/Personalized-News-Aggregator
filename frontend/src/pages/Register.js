@@ -75,45 +75,52 @@ function Register({ onClose }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Basic validation
     if (formData.preferredCategory.length === 0) {
       setAlertMessage("Please select at least one category.");
       setShowAlert(true);
       return;
     }
-    
-    // Validate password before submission
+  
     const { isValid, failedValidations } = validatePassword(formData.password);
-    
+  
     if (!isValid) {
       const message = `Your password must include ${failedValidations.join(", ")}.`;
       setAlertMessage(message);
       setShowAlert(true);
       return;
     }
-    
+  
     setIsLoading(true);
     setError("");
-
+  
     try {
       const response = await axios.post(
         `${process.env.REACT_APP_SERVER_URL}/register`,
         JSON.stringify(formData),
         { headers: { "Content-Type": "application/json" } }
       );
-
+  
       console.log("Registration successful:", response.data);
       setSuccess(true);
       setTimeout(() => {
-        onClose(); // Close modal after success
+        onClose();
       }, 2000);
     } catch (error) {
-      setError(error.response?.data?.message || "Registration failed. Please try again.");
+      const errorMessage = error.response?.data?.error || "Registration failed. Please try again.";
+  
+      if (errorMessage.includes("Username already exists")) {
+        setError(errorMessage);
+      } else if (errorMessage.includes("Email already exists")) {
+        setError("An account with this email already exists. Please log in or use a different email.");
+      } else {
+        setError(errorMessage);
+      }
+  
       console.error("Error:", error.response ? error.response.data : error.message);
     } finally {
       setIsLoading(false);
     }
-  };
+  };  
 
   return (
     <div className="signup-modal">
