@@ -95,7 +95,7 @@ const CategoryPreferences = ({ userDetails, onUpdateSuccess, onClose }) => {
     try {
       console.log("Sending update request with data:", updatedData);
 
-      const response = await fetch(`${process.env.REACT_APP_SERVER_URL}/update-user`, {
+      const response = await fetch(`${process.env.REACT_APP_SERVER_URL}/auth/update-user`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json"

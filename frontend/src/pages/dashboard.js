@@ -34,7 +34,8 @@ function Dashboard() {
       try {
         const response = await fetch(`${process.env.REACT_APP_SERVER_URL}/news/headlines`);
         const data = await response.json();
-        setNews(data.articles || []);
+        console.log("News API Response:", data);
+        setNews(data || []);
       } catch (error) {
         console.error("Error fetching news", error);
       }

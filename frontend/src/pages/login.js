@@ -28,7 +28,7 @@ function Login({ onClose, onForgotPassword }) {
 
     try {
       const response = await axios.post(
-        `${process.env.REACT_APP_SERVER_URL}/login`,
+        `${process.env.REACT_APP_SERVER_URL}/auth/login`,
         JSON.stringify(formData),
         {
           headers: { "Content-Type": "application/json" }

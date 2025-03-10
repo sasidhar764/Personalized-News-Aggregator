@@ -14,7 +14,7 @@ const AdminPage = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_SERVER_URL}/admin`);
+      const response = await fetch(`${process.env.REACT_APP_SERVER_URL}/auth/admin`);
       if (!response.ok) {
         throw new Error('Failed to fetch users');
       }
@@ -30,7 +30,7 @@ const AdminPage = () => {
   const handleDelete = async (username) => {
     if (window.confirm(`Are you sure you want to delete ${username}?`)) {
       try {
-        const response = await fetch(`${process.env.REACT_APP_SERVER_URL}/admin/deleteuser/${username}`, {
+        const response = await fetch(`${process.env.REACT_APP_SERVER_URL}/auth/admin/deleteuser/${username}`, {
           method: 'DELETE',
         });
         console.log(response);

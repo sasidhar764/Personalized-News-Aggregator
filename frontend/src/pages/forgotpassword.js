@@ -13,7 +13,7 @@ function ForgotPassword({ onClose }) {
     setMessage("");
 
     try {
-      await axios.post(`${process.env.REACT_APP_SERVER_URL}/forgot-password`, { email });
+      await axios.post(`${process.env.REACT_APP_SERVER_URL}/auth/forgot-password`, { email });
       setMessage("Password reset link sent! Check your email.");
     } catch (error) {
       setMessage("Error sending reset link. Please try again.");

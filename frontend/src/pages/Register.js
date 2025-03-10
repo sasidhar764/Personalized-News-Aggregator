@@ -95,7 +95,7 @@ function Register({ onClose }) {
   
     try {
       const response = await axios.post(
-        `${process.env.REACT_APP_SERVER_URL}/register`,
+        `${process.env.REACT_APP_SERVER_URL}/auth/register`,
         JSON.stringify(formData),
         { headers: { "Content-Type": "application/json" } }
       );
