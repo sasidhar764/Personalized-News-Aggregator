@@ -2,6 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
+const { scheduleNewsFetching } = require("./schedulers/news.scheduler");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -26,6 +27,7 @@ mongoose
       console.log(`Server running on ${HOST}:${PORT}`);
     });
     console.log("Connected to MongoDB!");
+    scheduleNewsFetching();
 
     process.on("SIGINT", async () => {
       try {

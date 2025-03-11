@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const NewsSchema = new mongoose.Schema({
+const HeadlineSchema = new mongoose.Schema({
     title: { type: String, required: true },
     description: { type: String, default: "No description available" },
     url: { type: String, required: true, unique: true },
@@ -10,8 +10,10 @@ const NewsSchema = new mongoose.Schema({
     reportCount: { type: Number, default: 0 },
     reportedUsers: { type: [String], default: [] },
     category: { type: String, default: "General" },
-    language: { type: String, default: "en" },
-    country: { type: String, default: "US" }
-}, { timestamps: true });
+    language: { type: String, default: "" },
+    country: { type: String, default: "" }
+});
 
-module.exports = mongoose.model("News", NewsSchema);
+const Headline = mongoose.model("Headline", HeadlineSchema);
+
+module.exports = Headline;
