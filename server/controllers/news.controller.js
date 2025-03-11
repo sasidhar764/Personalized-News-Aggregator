@@ -21,4 +21,24 @@ const getHeadlines = async (req, res) => {
     }
 };
 
-module.exports = { getNews, getHeadlines };
+const incrementViewCount = async (req, res) => {
+    try {
+        const { url } = req.body;
+        
+        let newsItem = await News.findOne({ url });
+
+        if (!newsItem) {
+            return res.status(404).json({ error: "News or headline not found." });
+        }
+
+        newsItem.viewcount = (newsItem.viewcount || 0) + 1;
+        await newsItem.save();
+
+        res.json({ message: "View count incremented.", viewcount: newsItem.viewcount });
+    } catch (error) {
+        console.error("Error incrementing view count:", error.message);
+        res.status(500).json({ error: "Failed to increment view count." });
+    }
+};
+
+module.exports = { getNews, getHeadlines, incrementViewCount };
