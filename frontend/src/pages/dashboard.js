@@ -94,7 +94,7 @@ function Dashboard() {
               <h3>{article.title}</h3>
               <p>{article.description}</p>
               <p>
-                Source: {article.source?.name || "Unknown"} | 
+                Source: {article.source || "Unknown"} | 
                 <a href={article.url} target="_blank" rel="noopener noreferrer">Read more</a>
               </p>
             </li>
