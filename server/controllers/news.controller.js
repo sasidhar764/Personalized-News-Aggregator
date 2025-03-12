@@ -1,5 +1,6 @@
 const News = require("../models/news.model");
 const Headlines = require("../models/headlines.model");
+const User = require("../models/user.model");
 
 const getNews = async (req, res) => {
     try {
@@ -41,4 +42,30 @@ const incrementViewCount = async (req, res) => {
     }
 };
 
-module.exports = { getNews, getHeadlines, incrementViewCount };
+const bookmarkNews = async (req, res) => {
+    try {
+        const { username, url } = req.body;
+
+        if (!username || !url) {
+            return res.status(400).json({ error: "Username and URL are required." });
+        }
+
+        let user = await User.findOne({ username });
+
+        if (!user) {
+            return res.status(404).json({ error: "User not found." });
+        }
+
+        if (!user.bookmarks.includes(url)) {
+            user.bookmarks.push(url);
+            await user.save();
+        }
+
+        res.json({ message: "News bookmarked successfully.", bookmarks: user.bookmarks });
+    } catch (error) {
+        console.error("Error bookmarking news:", error.message);
+        res.status(500).json({ error: "Failed to bookmark news." });
+    }
+};
+
+module.exports = { getNews, getHeadlines, incrementViewCount, bookmarkNews };

@@ -24,16 +24,20 @@ const userSchema = new mongoose.Schema(
             default: 'user'
         },
         preferredCategory: {
-            type: [String], // Accepts an array of strings
-            default: [], // Default category if not provided
+            type: [String],
+            default: [],
         },
         country: {
             type: String,
-            default: 'India' // Default country if not provided
+            default: 'India'
         },
         language: {
             type: String,
-            default: 'English' // Default language if not provided
+            default: 'English'
+        },
+        bookmarks: {
+            type: [String],
+            default: []
         }
     },
     {
