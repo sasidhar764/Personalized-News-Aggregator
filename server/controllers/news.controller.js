@@ -131,4 +131,14 @@ const deleteArticle = async (req, res) => {
     }
 };
 
-module.exports = { getNews, getHeadlines, incrementViewCount, bookmarkNews, reportArticle, getPreferredNews, deleteArticle };
+const getFlaggedArticles = async (req, res) => {
+    try {
+        const flaggedNews = await News.find({ reportCount: { $gt: 3 } }).sort({ reportCount: -1 });
+        res.json(flaggedNews);
+    } catch (error) {
+        console.error("Error fetching flagged articles:", error.message);
+        res.status(500).json({ error: "Failed to fetch flagged articles." });
+    }
+};
+
+module.exports = { getNews, getHeadlines, incrementViewCount, bookmarkNews, reportArticle, getPreferredNews, deleteArticle, getFlaggedArticles };
