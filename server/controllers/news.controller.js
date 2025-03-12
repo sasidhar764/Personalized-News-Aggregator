@@ -83,4 +83,32 @@ const reportArticle = async (req, res) => {
     }
 };
 
-module.exports = { getNews, getHeadlines, incrementViewCount, bookmarkNews, reportArticle };
+const getPreferredNews = async (req, res) => {
+    try {
+        const { username } = req.body;
+        if (!username) {
+            return res.status(400).json({ error: "Username is required." });
+        }
+        let user = await User.findOne({ username });
+        if (!user) {
+            return res.status(404).json({ error: "User not found." });
+        }
+        const preferredCategories = user.preferredCategory || [];
+        const preferredLanguage = user.language;
+        const preferredCountry = user.country;
+        let news = await News.find({
+            $or: [
+                { category: { $in: preferredCategories } },
+                { language: preferredLanguage },
+                { country: preferredCountry }
+            ]
+        }).sort({ publishedAt: -1 });
+        news = news.filter(article => !article.reportedUsers.includes(username));
+        res.json(news);
+    } catch (error) {
+        console.error("Error fetching preferred news:", error.message);
+        res.status(500).json({ error: "Failed to fetch preferred news." });
+    }
+};
+
+module.exports = { getNews, getHeadlines, incrementViewCount, bookmarkNews, reportArticle, getPreferredNews };
