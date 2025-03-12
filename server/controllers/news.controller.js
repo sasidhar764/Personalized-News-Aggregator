@@ -111,4 +111,24 @@ const getPreferredNews = async (req, res) => {
     }
 };
 
-module.exports = { getNews, getHeadlines, incrementViewCount, bookmarkNews, reportArticle, getPreferredNews };
+const deleteArticle = async (req, res) => {
+    try {
+        const { role, url } = req.body;
+        if (role !== "Admin") {
+            return res.status(403).json({ error: "Access denied. Only admins can delete articles." });
+        }
+        if (!url) {
+            return res.status(400).json({ error: "Article URL is required." });
+        }
+        const deletedNews = await News.findOneAndDelete({ url });
+        if (!deletedNews) {
+            return res.status(404).json({ error: "Article not found." });
+        }
+        res.json({ message: "Article deleted successfully." });
+    } catch (error) {
+        console.error("Error deleting article:", error.message);
+        res.status(500).json({ error: "Failed to delete article." });
+    }
+};
+
+module.exports = { getNews, getHeadlines, incrementViewCount, bookmarkNews, reportArticle, getPreferredNews, deleteArticle };
