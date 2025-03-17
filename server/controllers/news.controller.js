@@ -4,13 +4,35 @@ const User = require("../models/user.model");
 
 const getNews = async (req, res) => {
     try {
-        const news = await News.find().sort({ publishedAt: -1 });
+        const { language, country, category, startDate, endDate, search } = req.body;
+
+        let filter = {};
+
+        if (language) filter.language = language;
+        if (country) filter.country = country;
+        if (category) filter.category = category;
+        if (startDate || endDate) {
+            filter.publishedAt = {};
+            if (startDate) filter.publishedAt.$gte = new Date(startDate);
+            if (endDate) filter.publishedAt.$lte = new Date(endDate);
+        }
+        if (search) {
+            const regex = new RegExp(search, "i");
+            filter.$or = [
+                { title: regex },
+                { description: regex }
+            ];
+        }
+
+        const news = await News.find(filter).sort({ publishedAt: -1 });
+
         res.json(news);
     } catch (error) {
         console.error("Error fetching news:", error.message);
         res.status(500).json({ error: "Failed to fetch news." });
     }
 };
+
 
 const getHeadlines = async (req, res) => {
     try {
