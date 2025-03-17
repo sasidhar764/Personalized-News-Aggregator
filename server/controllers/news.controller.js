@@ -135,7 +135,7 @@ const getPreferredNews = async (req, res) => {
 
 const deleteArticle = async (req, res) => {
     try {
-        const { role, url } = req.body;
+        const { url } = req.body;
         if (!url) {
             return res.status(400).json({ error: "Article URL is required." });
         }
