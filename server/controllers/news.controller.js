@@ -136,9 +136,6 @@ const getPreferredNews = async (req, res) => {
 const deleteArticle = async (req, res) => {
     try {
         const { role, url } = req.body;
-        if (role !== "Admin") {
-            return res.status(403).json({ error: "Access denied. Only admins can delete articles." });
-        }
         if (!url) {
             return res.status(400).json({ error: "Article URL is required." });
         }
