@@ -160,4 +160,33 @@ const getFlaggedArticles = async (req, res) => {
     }
 };
 
-module.exports = { getNews, getHeadlines, incrementViewCount, bookmarkNews, reportArticle, getPreferredNews, deleteArticle, getFlaggedArticles };
+const removeFlags = async (req, res) => {
+    try {
+        const { url } = req.body;
+        if (!url) {
+            return res.status(400).json({ error: "Article URL is required." });
+        }
+        let newsItem = await News.findOne({ url });
+        if (!newsItem) {
+            return res.status(404).json({ error: "Article not found." });
+        }
+        newsItem.reportCount = 0;
+        await newsItem.save();
+        res.json({ message: "Flags removed successfully.", reportCount: newsItem.reportCount });
+    } catch (error) {
+        console.error("Error removing flags:", error.message);
+        res.status(500).json({ error: "Failed to remove flags." });
+    }
+};
+
+module.exports = { 
+    getNews, 
+    getHeadlines, 
+    incrementViewCount, 
+    bookmarkNews, 
+    reportArticle, 
+    getPreferredNews, 
+    deleteArticle, 
+    getFlaggedArticles, 
+    removeFlags 
+};

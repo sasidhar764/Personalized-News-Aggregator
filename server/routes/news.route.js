@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { getNews, getHeadlines, incrementViewCount, bookmarkNews, reportArticle, getPreferredNews, deleteArticle, getFlaggedArticles } = require("../controllers/news.controller");
+const { getNews, getHeadlines, incrementViewCount, bookmarkNews, reportArticle, getPreferredNews, deleteArticle, getFlaggedArticles, removeFlags } = require("../controllers/news.controller");
 
 router.get("/", getNews);
 router.get("/headlines", getHeadlines);
@@ -10,5 +10,6 @@ router.post("/reportarticle", reportArticle);
 router.get("/preferred", getPreferredNews);
 router.delete("/deletearticle", deleteArticle);
 router.get("/flaggedarticles", getFlaggedArticles);
+router.post("/removeflags", removeFlags);
 
 module.exports = router;
