@@ -185,6 +185,25 @@ const removeFlags = async (req, res) => {
     }
 };
 
+const getBookmarks = async (req, res) => {
+    try {
+        const { username } = req.body;
+        if (!username) {
+            return res.status(400).json({ error: "Username is required." });
+        }
+        let user = await User.findOne({ username });
+        if (!user) {
+            return res.status(404).json({ error: "User not found." });
+        }
+        const bookmarkedArticles = await News.find({ url: { $in: user.bookmarks } }).sort({ publishedAt: -1 });
+        res.json(bookmarkedArticles);
+    } catch (error) {
+        console.error("Error fetching bookmarks:", error.message);
+        res.status(500).json({ error: "Failed to fetch bookmarks." });
+    }
+};
+
+
 module.exports = { 
     getNews, 
     getHeadlines, 
@@ -194,5 +213,6 @@ module.exports = {
     getPreferredNews, 
     deleteArticle, 
     getFlaggedArticles, 
-    removeFlags 
+    removeFlags,
+    getBookmarks
 };
