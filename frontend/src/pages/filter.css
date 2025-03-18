@@ -1,0 +1,220 @@
+/* Filter Component Styles */
+.news-filter {
+    position: relative;
+    margin-left: 10px;
+  }
+  
+  .filter-toggle-btn {
+    background-color: #f0f2f5;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .filter-toggle-btn:hover {
+    background-color: #e4e6e9;
+  }
+  
+  .filter-panel {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    width: 320px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 100;
+    margin-top: 8px;
+    padding: 16px;
+    border: 1px solid #eaeaea;
+  }
+  
+  .filter-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eaeaea;
+  }
+  
+  .filter-panel-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+  }
+  
+  .close-filter-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    color: #666;
+  }
+  
+  .filter-section {
+    margin-bottom: 20px;
+  }
+  
+  .filter-section h4 {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+  }
+  
+  .category-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  .category-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 4px 8px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+  }
+  
+  .category-checkbox:hover {
+    background-color: #eaeaea;
+  }
+  
+  .filter-select {
+    width: 100%;
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    font-size: 14px;
+    background-color: #fff;
+  }
+  
+  .date-pickers {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .date-picker-container {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .date-picker-container label {
+    font-size: 13px;
+    color: #666;
+  }
+  
+  .date-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  
+  .calendar-icon {
+    position: absolute;
+    left: 10px;
+    color: #888;
+    z-index: 1;
+  }
+  
+  .date-input {
+    width: 100%;
+    padding: 8px 8px 8px 30px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    font-size: 14px;
+  }
+  
+  .filter-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 16px;
+  }
+  
+  .apply-filter-btn, 
+  .clear-filter-btn {
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+  }
+  
+  .apply-filter-btn {
+    background-color: #3b82f6;
+    color: white;
+  }
+  
+  .apply-filter-btn:hover {
+    background-color: #2563eb;
+  }
+  
+  .clear-filter-btn {
+    background-color: #f3f4f6;
+    color: #4b5563;
+  }
+  
+  .clear-filter-btn:hover {
+    background-color: #e5e7eb;
+  }
+  
+  /* Active filters styling */
+  .active-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+    align-items: center;
+  }
+  
+  .filter-tag-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #666;
+  }
+  
+  .filter-tag {
+    display: inline-block;
+    padding: 4px 8px;
+    background-color: #e0f2fe;
+    color: #0369a1;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 500;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .filter-panel {
+      width: calc(100vw - 32px);
+      right: -10px;
+    }
+    
+    .search-and-filter-container {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    
+    .news-filter {
+      margin-left: 0;
+      margin-top: 10px;
+    }
+    
+    .filter-toggle-btn {
+      width: 100%;
+      justify-content: center;
+    }
+  }
