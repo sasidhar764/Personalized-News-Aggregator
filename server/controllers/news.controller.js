@@ -232,7 +232,6 @@ const sendNewsSummaries = async () => {
 
 const toggleNewsSummary = async (req, res) => {
     try {
-        console.log(req.body);
         const { username, enable } = req.body;
         if (!username || enable === undefined) {
             return res.status(400).json({ error: "Username and enable flag are required." });

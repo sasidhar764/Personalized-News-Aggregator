@@ -33,14 +33,7 @@ const loginUser = async (req, res) => {
 
     return res.json({
       message: "Login successful",
-      user: {
-        username: user.username,
-        role: user.role, 
-        email: user.email,
-        preferredCategory: user.preferredCategory,
-        language: user.language,
-        country: user.country,
-      },
+      user,
       token,
     });
   } catch (error) {
