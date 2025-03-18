@@ -7,7 +7,7 @@ router.get("/headlines", getHeadlines);
 router.get("/incrementviewcount", incrementViewCount);
 router.post("/bookmark", bookmarkNews);
 router.post("/reportarticle", reportArticle);
-router.get("/preferred", getPreferredNews);
+router.post("/preferred", getPreferredNews);
 router.delete("/deletearticle", deleteArticle);
 router.get("/flaggedarticles", getFlaggedArticles);
 router.post("/removeflags", removeFlags);
