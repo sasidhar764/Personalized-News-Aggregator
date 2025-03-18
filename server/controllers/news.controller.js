@@ -87,17 +87,21 @@ const reportArticle = async (req, res) => {
         if (!username || !url) {
             return res.status(400).json({ error: "Username and URL are required." });
         }
+        let user = await User.findOne({ username });
+        if (!user) {
+            return res.status(404).json({ error: "User not found." });
+        }
         let newsItem = await News.findOne({ url });
         if (!newsItem) {
             return res.status(404).json({ error: "News article not found." });
         }
-        if (!newsItem.reportedUsers.includes(username)) {
-            newsItem.reportCount += 1;
-            newsItem.reportedUsers.push(username);
-            await newsItem.save();
-        } else {
+        if (user.reportedArticles.includes(url)) {
             return res.status(400).json({ error: "You have already reported this article." });
         }
+        newsItem.reportCount += 1;
+        await newsItem.save();
+        user.reportedArticles.push(url);
+        await user.save();
         res.json({ message: "Article reported successfully.", reportCount: newsItem.reportCount });
     } catch (error) {
         console.error("Error reporting article:", error.message);
@@ -118,14 +122,16 @@ const getPreferredNews = async (req, res) => {
         const preferredCategories = user.preferredCategory || [];
         const preferredLanguage = user.language;
         const preferredCountry = user.country;
+        const reportedArticles = user.reportedArticles || [];
         let news = await News.find({
             $or: [
                 { category: { $in: preferredCategories } },
                 { language: preferredLanguage },
                 { country: preferredCountry }
             ]
-        }).sort({ publishedAt: -1 });
-        news = news.filter(article => !article.reportedUsers.includes(username));
+        })
+        .sort({ publishedAt: -1 });
+        news = news.filter(article => !reportedArticles.includes(article.url));
         res.json(news);
     } catch (error) {
         console.error("Error fetching preferred news:", error.message);

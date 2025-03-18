@@ -38,6 +38,10 @@ const userSchema = new mongoose.Schema(
         bookmarks: {
             type: [String],
             default: []
+        },
+        reportedArticles: {
+            type: [String],
+            default: []
         }
     },
     {
