@@ -17,7 +17,7 @@ router.post("/", getNews);
 router.get("/headlines", getHeadlines);
 router.get("/incrementviewcount", incrementViewCount);
 router.post("/bookmark", bookmarkNews);
-router.get("/getbookmarks", getBookmarks);
+router.post("/getbookmarks", getBookmarks);
 router.post("/reportarticle", reportArticle);
 router.post("/preferred", getPreferredNews);
 router.delete("/deletearticle", deleteArticle);

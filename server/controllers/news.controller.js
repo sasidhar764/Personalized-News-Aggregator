@@ -1,6 +1,7 @@
 const News = require("../models/news.model");
 const Headlines = require("../models/headlines.model");
 const User = require("../models/user.model");
+const sendSummaryEmail = require("../utils/summarizer.utils");
 
 const getNews = async (req, res) => {
     try {
@@ -72,9 +73,18 @@ const bookmarkNews = async (req, res) => {
         }
         if (!user.bookmarks.includes(url)) {
             user.bookmarks.push(url);
-            await user.save();
         }
-        res.json({ message: "News bookmarked successfully.", bookmarks: user.bookmarks });
+        else
+        {
+            user.bookmarks = user.bookmarks.filter(bookmark => bookmark !== url);
+        }
+        await user.save();
+        res.json({ 
+            message: user.bookmarks.includes(url) 
+                ? "News bookmarked successfully." 
+                : "Bookmark removed successfully.",
+            bookmarks: user.bookmarks 
+        });
     } catch (error) {
         console.error("Error bookmarking news:", error.message);
         res.status(500).json({ error: "Failed to bookmark news." });
@@ -204,6 +214,22 @@ const getBookmarks = async (req, res) => {
 };
 
 
+const sendNewsSummaries = async () => {
+    try {
+        const topArticles = await News.find().sort({ viewcount: -1 }).limit(10);
+
+        const users = await User.find({ summary: true });
+
+        for (const user of users) {
+            await sendSummaryEmail(user.email, topArticles);
+        }
+
+        console.log("News summary emails sent successfully.");
+    } catch (error) {
+        console.error("Error sending news summary emails:", error.message);
+    }
+};
+
 module.exports = { 
     getNews, 
     getHeadlines, 
@@ -214,5 +240,6 @@ module.exports = {
     deleteArticle, 
     getFlaggedArticles, 
     removeFlags,
-    getBookmarks
+    getBookmarks,
+    sendNewsSummaries
 };

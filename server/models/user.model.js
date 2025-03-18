@@ -42,6 +42,10 @@ const userSchema = new mongoose.Schema(
         reportedArticles: {
             type: [String],
             default: []
+        },
+        summary: {
+            type: Boolean,
+            default: false
         }
     },
     {
