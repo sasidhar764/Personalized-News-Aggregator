@@ -10,12 +10,13 @@ const {
     getPreferredNews, 
     deleteArticle, 
     getFlaggedArticles, 
-    removeFlags 
+    removeFlags,
+    toggleNewsSummary
 } = require("../controllers/news.controller");
 
 router.post("/", getNews);
 router.get("/headlines", getHeadlines);
-router.get("/incrementviewcount", incrementViewCount);
+router.put("/incrementviewcount", incrementViewCount);
 router.post("/bookmark", bookmarkNews);
 router.post("/getbookmarks", getBookmarks);
 router.post("/reportarticle", reportArticle);
@@ -23,5 +24,6 @@ router.post("/preferred", getPreferredNews);
 router.delete("/deletearticle", deleteArticle);
 router.get("/flaggedarticles", getFlaggedArticles);
 router.post("/removeflags", removeFlags);
+router.post("/togglesummary", toggleNewsSummary);
 
 module.exports = router;

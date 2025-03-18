@@ -230,6 +230,27 @@ const sendNewsSummaries = async () => {
     }
 };
 
+const toggleNewsSummary = async (req, res) => {
+    try {
+        console.log(req.body);
+        const { username, enable } = req.body;
+        if (!username || enable === undefined) {
+            return res.status(400).json({ error: "Username and enable flag are required." });
+        }
+
+        let user = await User.findOne({ username });
+        if (!user) return res.status(404).json({ error: "User not found." });
+
+        user.summary = enable;
+        await user.save();
+
+        res.json({ message: `News summary ${enable ? "enabled" : "disabled"} successfully.` });
+    } catch (error) {
+        console.error("Error toggling news summary:", error.message);
+        res.status(500).json({ error: "Failed to update news summary setting." });
+    }
+};
+
 module.exports = { 
     getNews, 
     getHeadlines, 
@@ -241,5 +262,6 @@ module.exports = {
     getFlaggedArticles, 
     removeFlags,
     getBookmarks,
-    sendNewsSummaries
+    sendNewsSummaries,
+    toggleNewsSummary
 };
