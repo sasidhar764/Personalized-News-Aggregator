@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import CategoryPreferences from "../components/dashboard/updateuser";
+import NewsFilter from "./filter";
 import "./dashboard.css";
+import "./filter.css";
 import {
   FaHome,
   FaUser,
@@ -14,25 +16,45 @@ import {
   FaStar,
   FaSearch,
   FaTimes,
+  FaEnvelope,
 } from "react-icons/fa";
+
+// handleReadMore function to increment view count
+const handleReadMore = async (url) => {
+  try {
+    const response = await fetch(`${process.env.REACT_APP_SERVER_URL}/news/incrementviewcount`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+      },
+      body: JSON.stringify({
+        url: url,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to log read more event");
+    }
+  } catch (error) {
+    console.error("Error logging read more event", error);
+  }
+};
 
 function Dashboard() {
   const navigate = useNavigate();
   const [userData, setUserData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [showEmailModal, setShowEmailModal] = useState(false);
   const [news, setNews] = useState([]);
   const [navOpen, setNavOpen] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
+  const [isFiltering, setIsFiltering] = useState(false);
+  const [activeFilters, setActiveFilters] = useState(null);
 
   useEffect(() => {
-    const token = localStorage.getItem("authToken");
-    if (!token) {
-      navigate("/login");
-      return;
-    }
-
     const fetchUserData = async () => {
       try {
         const storedUser = localStorage.getItem("user");
@@ -59,7 +81,7 @@ function Dashboard() {
 
     fetchUserData();
     fetchNews();
-  }, [navigate]);
+  }, []);
 
   const handleCategoryUpdate = (newCategory) => {
     setUserData((prev) => ({
@@ -120,7 +142,6 @@ function Dashboard() {
     }
 
     try {
-      console.log("data", userData.username, article.url);
       await fetch(`${process.env.REACT_APP_SERVER_URL}/news/reportarticle`, {
         method: "POST",
         headers: {
@@ -150,13 +171,13 @@ function Dashboard() {
     }
 
     setIsSearching(true);
+    setIsFiltering(false);
+    setActiveFilters(null);
+
     try {
       const requestBody = { search: searchQuery };
       console.log("Sending search request with query:", requestBody);
-      
-      // Log the full URL being used
-      console.log("Request URL:", `${process.env.REACT_APP_SERVER_URL}/news`);
-      
+
       const response = await fetch(`${process.env.REACT_APP_SERVER_URL}/news`, {
         method: "POST",
         headers: {
@@ -165,22 +186,17 @@ function Dashboard() {
         },
         body: JSON.stringify(requestBody),
       });
-      
-      console.log("Response status:", response.status);
-      
+
       if (!response.ok) {
         const errorText = await response.text();
-        console.error("Error response:", errorText);
         throw new Error(`Server responded with ${response.status}: ${errorText}`);
       }
-      
+
       const data = await response.json();
-      console.log("Search results:", data);
-      
+
       if (data && Array.isArray(data)) {
         setNews(data);
       } else {
-        console.log("No articles found or invalid data format");
         setNews([]);
       }
     } catch (error) {
@@ -192,6 +208,17 @@ function Dashboard() {
   const clearSearch = async () => {
     setSearchQuery("");
     setIsSearching(false);
+
+    if (isFiltering && activeFilters) {
+      // If filters are active, reapply them
+      handleApplyFilter(activeFilters);
+    } else {
+      // Otherwise fetch headlines
+      fetchHeadlines();
+    }
+  };
+
+  const fetchHeadlines = async () => {
     try {
       const response = await fetch(`${process.env.REACT_APP_SERVER_URL}/news/headlines`);
       const data = await response.json();
@@ -199,6 +226,100 @@ function Dashboard() {
     } catch (error) {
       console.error("Error fetching news", error);
     }
+  };
+
+  const handleApplyFilter = async (filters) => {
+    setIsFiltering(true);
+    setIsSearching(false);
+    setSearchQuery("");
+    setActiveFilters(filters);
+
+    try {
+      const requestBody = {
+        ...filters,
+      };
+
+      // If there's a search query, include it
+      if (searchQuery.trim()) {
+        requestBody.search = searchQuery;
+        setIsSearching(true);
+      }
+
+      console.log("Applying filters:", requestBody);
+
+      const response = await fetch(`${process.env.REACT_APP_SERVER_URL}/news`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Server responded with ${response.status}: ${errorText}`);
+      }
+
+      const data = await response.json();
+
+      if (data && Array.isArray(data)) {
+        setNews(data);
+      } else {
+        setNews([]);
+      }
+    } catch (error) {
+      console.error("Error applying filters", error);
+      alert("Failed to filter news");
+    }
+  };
+
+  const handleClearFilters = async () => {
+    setIsFiltering(false);
+    setActiveFilters(null);
+
+    if (searchQuery.trim()) {
+      // If there's a search query, reapply just the search
+      handleSearch({ preventDefault: () => {} });
+    } else {
+      // Otherwise fetch headlines
+      fetchHeadlines();
+    }
+  };
+
+  const handleEmailUpdate = async (enable) => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_SERVER_URL}/news/togglesummary`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+        },
+        body: JSON.stringify({
+          username: userData.username,
+          enable: enable,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update email preferences");
+      }
+
+      // Update local storage with the new summary flag
+      const updatedUser = { ...userData, summary: enable };
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+      setUserData(updatedUser);
+
+      alert(`Email updates ${enable ? "enabled" : "disabled"} successfully!`);
+      setShowEmailModal(false); // Close the modal
+    } catch (error) {
+      console.error("Error updating email preferences", error);
+      alert("Failed to update email preferences");
+    }
+  };
+
+  const openEmailModal = () => {
+    setShowEmailModal(true);
   };
 
   if (isLoading) {
@@ -242,6 +363,14 @@ function Dashboard() {
             <FaStar className="nav-icon" />
             {navOpen && <span className="nav-label">Personalized News</span>}
           </div>
+          <div className="nav-item" onClick={() => navigate("/bookmarks")}>
+            <FaBookmark className="nav-icon" />
+            {navOpen && <span className="nav-label">Bookmarks</span>}
+          </div>
+          <div className="nav-item" onClick={openEmailModal}>
+            <FaEnvelope className="nav-icon" />
+            {navOpen && <span className="nav-label">Email Updates</span>}
+          </div>
           {userData.role === "admin" && (
             <div className="nav-item" onClick={handleFlaggedArticlesRedirect}>
               <FaFlag className="nav-icon" />
@@ -269,9 +398,9 @@ function Dashboard() {
         <div className="content-wrapper">
           <header className="content-header">
             <h1>News Dashboard</h1>
-            
-            {/* Search Bar */}
-            <div className="search-container">
+
+            {/* Search and Filter Section */}
+            <div className="search-and-filter-container">
               <form onSubmit={handleSearch} className="search-form">
                 <div className="search-input-container">
                   <input
@@ -296,11 +425,28 @@ function Dashboard() {
                   <FaSearch /> Search
                 </button>
               </form>
+
+              {/* News Filter Component */}
+              <NewsFilter
+                onApplyFilter={handleApplyFilter}
+                onClearFilter={handleClearFilters}
+                currentPreferences={{
+                  category: userData?.preferredCategory || "",
+                }}
+              />
             </div>
           </header>
 
           <div className="news-section">
-            <h2 className="news-title">{isSearching ? "Search Results" : "Headlines"}</h2>
+            <h2 className="news-title">
+              {isSearching && isFiltering
+                ? "Search & Filter Results"
+                : isSearching
+                ? "Search Results"
+                : isFiltering
+                ? "Filtered News"
+                : "Headlines"}
+            </h2>
             <div className="news-list">
               {news.length > 0 ? (
                 news.map((article, index) => (
@@ -309,7 +455,12 @@ function Dashboard() {
                     <p>{article.description}</p>
                     <p className="news-source">
                       Source: {article.source || "Unknown"} |
-                      <a href={article.url} target="_blank" rel="noopener noreferrer">
+                      <a
+                        href={article.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={() => handleReadMore(article.url)}
+                      >
                         {" "}
                         Read more
                       </a>
@@ -326,8 +477,12 @@ function Dashboard() {
                 ))
               ) : (
                 <div className="no-results">
-                  {isSearching 
-                    ? "No articles found matching your search. Try different keywords." 
+                  {isSearching && isFiltering
+                    ? "No articles found matching your search and filters. Try different criteria."
+                    : isSearching
+                    ? "No articles found matching your search. Try different keywords."
+                    : isFiltering
+                    ? "No articles found with the selected filters. Try different filter options."
                     : "No headlines available at the moment."}
                 </div>
               )}
@@ -336,6 +491,7 @@ function Dashboard() {
         </div>
       </div>
 
+      {/* Category Preferences Modal */}
       {showCategoryModal && (
         <div className="modal-overlay">
           <CategoryPreferences
@@ -344,6 +500,31 @@ function Dashboard() {
             onUpdateSuccess={handleCategoryUpdate}
             onClose={() => setShowCategoryModal(false)}
           />
+        </div>
+      )}
+
+      {/* Email Updates Modal */}
+      {showEmailModal && (
+        <div className="modal-overlay">
+          <div className="email-modal">
+            <h2>Email Updates</h2>
+            {userData?.summary === false ? (
+              <p>Would you like to enable email updates?</p>
+            ) : (
+              <p>Would you like to disable email updates?</p>
+            )}
+            <div className="email-modal-buttons">
+              <button
+                className="email-modal-btn"
+                onClick={() => handleEmailUpdate(!userData?.summary)}
+              >
+                {userData?.summary === false ? "Enable" : "Disable"}
+              </button>
+              <button className="email-modal-btn" onClick={() => setShowEmailModal(false)}>
+                Cancel
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

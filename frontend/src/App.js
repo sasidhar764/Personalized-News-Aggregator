@@ -7,7 +7,8 @@ import ForgotPassword from "./pages/forgotpassword";
 import ResetPassword from "./pages/resetpassword";
 import AdminPage from "./pages/adminpage";
 import FlaggedArticles from "./pages/FlaggedArticles";
-import PersonalizedNews from "./pages/personalize"; // Import the new component
+import PersonalizedNews from "./pages/personalize";
+import Bookmarks from "./pages/bookmark"; // Import the new component
 import ProtectedRoute from "./protectedroute";
 
 function App() {
@@ -21,7 +22,8 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/flagged-articles" element={<ProtectedRoute element={<FlaggedArticles />} />} />
-        <Route path="/personalized-news" element={<ProtectedRoute element={<PersonalizedNews />} />} /> {/* New Route */}
+        <Route path="/personalized-news" element={<ProtectedRoute element={<PersonalizedNews />} />} />
+        <Route path="/bookmarks" element={<ProtectedRoute element={<Bookmarks />} />} /> 
         <Route path="/register" element={<Navigate to="/signup" />} />
         <Route path="/admin" element={<ProtectedRoute element={<AdminPage />} requiredRole="admin" />} />
       </Routes>

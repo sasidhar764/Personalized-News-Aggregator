@@ -1,0 +1,47 @@
+.bookmarks-page {
+    padding: 20px;
+  }
+  
+  .bookmarks-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .bookmark-item {
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+  }
+  
+  .bookmark-item h3 {
+    margin: 0 0 10px;
+  }
+  
+  .news-source {
+    font-size: 0.9em;
+    color: #555;
+  }
+  
+  .bookmark-actions {
+    margin-top: 10px;
+  }
+  
+  .remove-bookmark-btn {
+    background-color: #ff4d4d;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .remove-bookmark-btn:hover {
+    background-color: #ff1a1a;
+  }
+  
+  .no-results {
+    text-align: center;
+    color: #888;
+  }

@@ -2,6 +2,28 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./personalize.css";
 
+// handleReadMore function to increment view count
+const handleReadMore = async (url) => {
+  try {
+    const response = await fetch(`${process.env.REACT_APP_SERVER_URL}/news/incrementviewcount`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+      },
+      body: JSON.stringify({
+        url: url,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to log read more event");
+    }
+  } catch (error) {
+    console.error("Error logging read more event", error);
+  }
+};
+
 function PersonalizedNews() {
   const [news, setNews] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -99,7 +121,7 @@ function PersonalizedNews() {
       });
 
       // Remove the flagged article from the news array
-      setNews((prevNews) => prevNews.filter((newsArticle) => newsArticle.url !== article.url));
+      // setNews((prevNews) => prevNews.filter((newsArticle) => newsArticle.url !== article.url));
 
       alert("Article flagged for review and removed from display!");
     } catch (error) {
@@ -123,7 +145,12 @@ function PersonalizedNews() {
               <p>{article.description}</p>
               <p className="news-source">
                 Source: {article.source || "Unknown"} |
-                <a href={article.url} target="_blank" rel="noopener noreferrer">
+                <a
+                  href={article.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => handleReadMore(article.url)} // Call handleReadMore here
+                >
                   {" "}
                   Read more
                 </a>
