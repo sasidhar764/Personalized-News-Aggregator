@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import CategoryPreferences from "../components/dashboard/updateuser";
 import NewsFilter from "./filter";
 import "./dashboard.css";
 import "./filter.css";
 import {
   FaHome,
   FaUser,
-  FaNewspaper,
   FaSignOutAlt,
   FaShieldAlt,
   FaBars,
@@ -16,43 +14,40 @@ import {
   FaStar,
   FaSearch,
   FaTimes,
-  FaEnvelope,
 } from "react-icons/fa";
-
-// handleReadMore function to increment view count
-const handleReadMore = async (url) => {
-  try {
-    const response = await fetch(`${process.env.REACT_APP_SERVER_URL}/news/incrementviewcount`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-      },
-      body: JSON.stringify({
-        url: url,
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error("Failed to log read more event");
-    }
-  } catch (error) {
-    console.error("Error logging read more event", error);
-  }
-};
 
 function Dashboard() {
   const navigate = useNavigate();
   const [userData, setUserData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [showCategoryModal, setShowCategoryModal] = useState(false);
-  const [showEmailModal, setShowEmailModal] = useState(false);
   const [news, setNews] = useState([]);
   const [navOpen, setNavOpen] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [isFiltering, setIsFiltering] = useState(false);
   const [activeFilters, setActiveFilters] = useState(null);
+
+  // Define handleReadMore function
+  const handleReadMore = async (url) => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_SERVER_URL}/news/incrementviewcount`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+        },
+        body: JSON.stringify({
+          url: url,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to log read more event");
+      }
+    } catch (error) {
+      console.error("Error logging read more event", error);
+    }
+  };
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -72,7 +67,6 @@ function Dashboard() {
       try {
         const response = await fetch(`${process.env.REACT_APP_SERVER_URL}/news/headlines`);
         const data = await response.json();
-        console.log("News API Response:", data);
         setNews(data || []);
       } catch (error) {
         console.error("Error fetching news", error);
@@ -82,13 +76,6 @@ function Dashboard() {
     fetchUserData();
     fetchNews();
   }, []);
-
-  const handleCategoryUpdate = (newCategory) => {
-    setUserData((prev) => ({
-      ...prev,
-      preferredCategory: newCategory,
-    }));
-  };
 
   const handleLogout = () => {
     localStorage.clear();
@@ -176,8 +163,6 @@ function Dashboard() {
 
     try {
       const requestBody = { search: searchQuery };
-      console.log("Sending search request with query:", requestBody);
-
       const response = await fetch(`${process.env.REACT_APP_SERVER_URL}/news`, {
         method: "POST",
         headers: {
@@ -188,17 +173,11 @@ function Dashboard() {
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Server responded with ${response.status}: ${errorText}`);
+        throw new Error("Failed to search for news");
       }
 
       const data = await response.json();
-
-      if (data && Array.isArray(data)) {
-        setNews(data);
-      } else {
-        setNews([]);
-      }
+      setNews(data || []);
     } catch (error) {
       console.error("Error searching news", error);
       alert("Failed to search for news");
@@ -235,18 +214,7 @@ function Dashboard() {
     setActiveFilters(filters);
 
     try {
-      const requestBody = {
-        ...filters,
-      };
-
-      // If there's a search query, include it
-      if (searchQuery.trim()) {
-        requestBody.search = searchQuery;
-        setIsSearching(true);
-      }
-
-      console.log("Applying filters:", requestBody);
-
+      const requestBody = { ...filters };
       const response = await fetch(`${process.env.REACT_APP_SERVER_URL}/news`, {
         method: "POST",
         headers: {
@@ -257,17 +225,11 @@ function Dashboard() {
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Server responded with ${response.status}: ${errorText}`);
+        throw new Error("Failed to filter news");
       }
 
       const data = await response.json();
-
-      if (data && Array.isArray(data)) {
-        setNews(data);
-      } else {
-        setNews([]);
-      }
+      setNews(data || []);
     } catch (error) {
       console.error("Error applying filters", error);
       alert("Failed to filter news");
@@ -285,41 +247,6 @@ function Dashboard() {
       // Otherwise fetch headlines
       fetchHeadlines();
     }
-  };
-
-  const handleEmailUpdate = async (enable) => {
-    try {
-      const response = await fetch(`${process.env.REACT_APP_SERVER_URL}/news/togglesummary`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-        },
-        body: JSON.stringify({
-          username: userData.username,
-          enable: enable,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to update email preferences");
-      }
-
-      // Update local storage with the new summary flag
-      const updatedUser = { ...userData, summary: enable };
-      localStorage.setItem("user", JSON.stringify(updatedUser));
-      setUserData(updatedUser);
-
-      alert(`Email updates ${enable ? "enabled" : "disabled"} successfully!`);
-      setShowEmailModal(false); // Close the modal
-    } catch (error) {
-      console.error("Error updating email preferences", error);
-      alert("Failed to update email preferences");
-    }
-  };
-
-  const openEmailModal = () => {
-    setShowEmailModal(true);
   };
 
   if (isLoading) {
@@ -355,10 +282,6 @@ function Dashboard() {
             <FaHome className="nav-icon" />
             {navOpen && <span className="nav-label">Dashboard</span>}
           </div>
-          <div className="nav-item" onClick={() => setShowCategoryModal(true)}>
-            <FaNewspaper className="nav-icon" />
-            {navOpen && <span className="nav-label">Preferences</span>}
-          </div>
           <div className="nav-item" onClick={handlePersonalizedNewsRedirect}>
             <FaStar className="nav-icon" />
             {navOpen && <span className="nav-label">Personalized News</span>}
@@ -366,10 +289,6 @@ function Dashboard() {
           <div className="nav-item" onClick={() => navigate("/bookmarks")}>
             <FaBookmark className="nav-icon" />
             {navOpen && <span className="nav-label">Bookmarks</span>}
-          </div>
-          <div className="nav-item" onClick={openEmailModal}>
-            <FaEnvelope className="nav-icon" />
-            {navOpen && <span className="nav-label">Email Updates</span>}
           </div>
           {userData.role === "admin" && (
             <div className="nav-item" onClick={handleFlaggedArticlesRedirect}>
@@ -383,6 +302,11 @@ function Dashboard() {
               {navOpen && <span className="nav-label">Admin</span>}
             </div>
           )}
+          {/* Settings Option */}
+          <div className="nav-item" onClick={() => navigate("/settings")}>
+            <FaUser className="nav-icon" />
+            {navOpen && <span className="nav-label">Settings</span>}
+          </div>
         </div>
 
         <div className="nav-footer">
@@ -490,43 +414,6 @@ function Dashboard() {
           </div>
         </div>
       </div>
-
-      {/* Category Preferences Modal */}
-      {showCategoryModal && (
-        <div className="modal-overlay">
-          <CategoryPreferences
-            currentCategory={userData?.preferredCategory}
-            userDetails={userData}
-            onUpdateSuccess={handleCategoryUpdate}
-            onClose={() => setShowCategoryModal(false)}
-          />
-        </div>
-      )}
-
-      {/* Email Updates Modal */}
-      {showEmailModal && (
-        <div className="modal-overlay">
-          <div className="email-modal">
-            <h2>Email Updates</h2>
-            {userData?.summary === false ? (
-              <p>Would you like to enable email updates?</p>
-            ) : (
-              <p>Would you like to disable email updates?</p>
-            )}
-            <div className="email-modal-buttons">
-              <button
-                className="email-modal-btn"
-                onClick={() => handleEmailUpdate(!userData?.summary)}
-              >
-                {userData?.summary === false ? "Enable" : "Disable"}
-              </button>
-              <button className="email-modal-btn" onClick={() => setShowEmailModal(false)}>
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
