@@ -12,7 +12,7 @@ const sendSummaryEmail = async (email, summaryContent) => {
     const mailOptions = {
         from: process.env.EMAIL_USER,
         to: email,
-        subject: "Your Daily News Summary",
+        subject: "Your Weekly News Summary",
         html: `
         <div style="font-family: Arial, sans-serif; text-align: center; padding: 20px; background-color: #f4f4f4;">
           <div style="max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0px 0px 10px rgba(0,0,0,0.1);">
