@@ -1,27 +1,18 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import NewsFilter from "./filter";
 import "./dashboard.css";
 import "./filter.css";
 import {
-  FaHome,
-  FaUser,
-  FaSignOutAlt,
-  FaShieldAlt,
-  FaBars,
-  FaFlag,
   FaBookmark,
-  FaStar,
+  FaFlag,
   FaSearch,
   FaTimes,
 } from "react-icons/fa";
 
 function Dashboard() {
-  const navigate = useNavigate();
   const [userData, setUserData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [news, setNews] = useState([]);
-  const [navOpen, setNavOpen] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [isFiltering, setIsFiltering] = useState(false);
@@ -49,6 +40,17 @@ function Dashboard() {
     }
   };
 
+  // Define fetchHeadlines as a standalone function so it can be called elsewhere
+  const fetchHeadlines = async () => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_SERVER_URL}/news/headlines`);
+      const data = await response.json();
+      setNews(data || []);
+    } catch (error) {
+      console.error("Error fetching news", error);
+    }
+  };
+
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -63,40 +65,9 @@ function Dashboard() {
       }
     };
 
-    const fetchNews = async () => {
-      try {
-        const response = await fetch(`${process.env.REACT_APP_SERVER_URL}/news/headlines`);
-        const data = await response.json();
-        setNews(data || []);
-      } catch (error) {
-        console.error("Error fetching news", error);
-      }
-    };
-
     fetchUserData();
-    fetchNews();
+    fetchHeadlines(); // Use the standalone function here
   }, []);
-
-  const handleLogout = () => {
-    localStorage.clear();
-    navigate("/");
-  };
-
-  const handleAdminRedirect = () => {
-    navigate("/admin");
-  };
-
-  const handleFlaggedArticlesRedirect = () => {
-    navigate("/flagged-articles");
-  };
-
-  const handlePersonalizedNewsRedirect = () => {
-    navigate("/personalized-news");
-  };
-
-  const toggleNav = () => {
-    setNavOpen(!navOpen);
-  };
 
   const handleBookmark = async (article) => {
     if (!userData) {
@@ -160,6 +131,7 @@ function Dashboard() {
     setIsSearching(true);
     setIsFiltering(false);
     setActiveFilters(null);
+    console.log("hi",searchQuery)
 
     try {
       const requestBody = { search: searchQuery };
@@ -194,16 +166,6 @@ function Dashboard() {
     } else {
       // Otherwise fetch headlines
       fetchHeadlines();
-    }
-  };
-
-  const fetchHeadlines = async () => {
-    try {
-      const response = await fetch(`${process.env.REACT_APP_SERVER_URL}/news/headlines`);
-      const data = await response.json();
-      setNews(data || []);
-    } catch (error) {
-      console.error("Error fetching news", error);
     }
   };
 
@@ -254,164 +216,97 @@ function Dashboard() {
   }
 
   return (
-    <div className="dashboard-layout">
-      {/* Side Navigation Bar */}
-      <div className={`side-nav ${navOpen ? "open" : "closed"}`}>
-        <div className="nav-header">
-          {navOpen && <h2 className="nav-logo">NewsApp</h2>}
-          <button className="nav-toggle" onClick={toggleNav}>
-            <FaBars />
-          </button>
-        </div>
+    <div className="content-wrapper">
+      <header className="content-header">
+        <h1>News Dashboard</h1>
 
-        <div className="nav-user-info">
-          <div className="user-avatar">
-            <FaUser />
-          </div>
-          {navOpen && (
-            <span className="user-name">
-              {userData?.username
-                ? userData.username.charAt(0).toUpperCase() + userData.username.slice(1)
-                : "User"}
-            </span>
-          )}
-        </div>
-
-        <div className="nav-items">
-          <div className="nav-item active">
-            <FaHome className="nav-icon" />
-            {navOpen && <span className="nav-label">Dashboard</span>}
-          </div>
-          <div className="nav-item" onClick={handlePersonalizedNewsRedirect}>
-            <FaStar className="nav-icon" />
-            {navOpen && <span className="nav-label">Personalized News</span>}
-          </div>
-          <div className="nav-item" onClick={() => navigate("/bookmarks")}>
-            <FaBookmark className="nav-icon" />
-            {navOpen && <span className="nav-label">Bookmarks</span>}
-          </div>
-          {userData.role === "admin" && (
-            <div className="nav-item" onClick={handleFlaggedArticlesRedirect}>
-              <FaFlag className="nav-icon" />
-              {navOpen && <span className="nav-label">Flagged Articles</span>}
-            </div>
-          )}
-          {userData.role === "admin" && (
-            <div className="nav-item" onClick={handleAdminRedirect}>
-              <FaShieldAlt className="nav-icon" />
-              {navOpen && <span className="nav-label">Admin</span>}
-            </div>
-          )}
-          {/* Settings Option */}
-          <div className="nav-item" onClick={() => navigate("/settings")}>
-            <FaUser className="nav-icon" />
-            {navOpen && <span className="nav-label">Settings</span>}
-          </div>
-        </div>
-
-        <div className="nav-footer">
-          <div className="logout-item" onClick={handleLogout}>
-            <FaSignOutAlt className="nav-icon" />
-            {navOpen && <span className="nav-label">Logout</span>}
-          </div>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className={`main-content ${navOpen ? "nav-open" : "nav-closed"}`}>
-        <div className="content-wrapper">
-          <header className="content-header">
-            <h1>News Dashboard</h1>
-
-            {/* Search and Filter Section */}
-            <div className="search-and-filter-container">
-              <form onSubmit={handleSearch} className="search-form">
-                <div className="search-input-container">
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search news..."
-                    className="search-input"
-                  />
-                  {searchQuery && (
-                    <button
-                      type="button"
-                      className="clear-search-btn"
-                      onClick={clearSearch}
-                      aria-label="Clear search"
-                    >
-                      <FaTimes />
-                    </button>
-                  )}
-                </div>
-                <button type="submit" className="search-btn">
-                  <FaSearch /> Search
-                </button>
-              </form>
-
-              {/* News Filter Component */}
-              <NewsFilter
-                onApplyFilter={handleApplyFilter}
-                onClearFilter={handleClearFilters}
-                currentPreferences={{
-                  category: userData?.preferredCategory || "",
-                }}
+        {/* Search and Filter Section */}
+        <div className="search-and-filter-container">
+          <form onSubmit={handleSearch} className="search-form">
+            <div className="search-input-container">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search news..."
+                className="search-input"
               />
-            </div>
-          </header>
-
-          <div className="news-section">
-            <h2 className="news-title">
-              {isSearching && isFiltering
-                ? "Search & Filter Results"
-                : isSearching
-                ? "Search Results"
-                : isFiltering
-                ? "Filtered News"
-                : "Headlines"}
-            </h2>
-            <div className="news-list">
-              {news.length > 0 ? (
-                news.map((article, index) => (
-                  <div key={index} className="news-item">
-                    <h3>{article.title}</h3>
-                    <p>{article.description}</p>
-                    <p className="news-source">
-                      Source: {article.source || "Unknown"} |
-                      <a
-                        href={article.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={() => handleReadMore(article.url)}
-                      >
-                        {" "}
-                        Read more
-                      </a>
-                    </p>
-                    <div className="news-actions">
-                      <button className="news-action-btn" onClick={() => handleBookmark(article)}>
-                        <FaBookmark className="action-icon" /> Bookmark
-                      </button>
-                      <button className="news-action-btn" onClick={() => handleFlag(article)}>
-                        <FaFlag className="action-icon" /> Flag
-                      </button>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="no-results">
-                  {isSearching && isFiltering
-                    ? "No articles found matching your search and filters. Try different criteria."
-                    : isSearching
-                    ? "No articles found matching your search. Try different keywords."
-                    : isFiltering
-                    ? "No articles found with the selected filters. Try different filter options."
-                    : "No headlines available at the moment."}
-                </div>
+              {searchQuery && (
+                <button
+                  type="button"
+                  className="clear-search-btn"
+                  onClick={clearSearch}
+                  aria-label="Clear search"
+                >
+                  <FaTimes />
+                </button>
               )}
             </div>
-          </div>
+            <button type="submit" className="search-btn">
+              <FaSearch /> Search
+            </button>
+          </form>
+
+          {/* News Filter Component */}
+          <NewsFilter
+            onApplyFilter={handleApplyFilter}
+            onClearFilter={handleClearFilters}
+            currentPreferences={{
+              category: userData?.preferredCategory || "",
+            }}
+          />
+        </div>
+      </header>
+
+      <div className="news-section">
+        <h2 className="news-title">
+          {isSearching && isFiltering
+            ? "Search & Filter Results"
+            : isSearching
+            ? "Search Results"
+            : isFiltering
+            ? "Filtered News"
+            : "Headlines"}
+        </h2>
+        <div className="news-list">
+          {news.length > 0 ? (
+            news.map((article, index) => (
+              <div key={index} className="news-item">
+                <h3>{article.title}</h3>
+                <p>{article.description}</p>
+                <p className="news-source">
+                  Source: {article.source || "Unknown"} |
+                  <a
+                    href={article.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => handleReadMore(article.url)}
+                  >
+                    {" "}
+                    Read more
+                  </a>
+                </p>
+                <div className="news-actions">
+                  <button className="news-action-btn" onClick={() => handleBookmark(article)}>
+                    <FaBookmark className="action-icon" /> Bookmark
+                  </button>
+                  <button className="news-action-btn" onClick={() => handleFlag(article)}>
+                    <FaFlag className="action-icon" /> Flag
+                  </button>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="no-results">
+              {isSearching && isFiltering
+                ? "No articles found matching your search and filters. Try different criteria."
+                : isSearching
+                ? "No articles found matching your search. Try different keywords."
+                : isFiltering
+                ? "No articles found with the selected filters. Try different filter options."
+                : "No headlines available at the moment."}
+            </div>
+          )}
         </div>
       </div>
     </div>

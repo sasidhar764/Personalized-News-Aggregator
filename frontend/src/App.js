@@ -9,27 +9,33 @@ import AdminPage from "./pages/adminpage";
 import FlaggedArticles from "./pages/FlaggedArticles";
 import PersonalizedNews from "./pages/personalize";
 import Bookmarks from "./pages/bookmark";
-import Settings from "./pages/settings"; // Ensure this import is correct
+import Settings from "./pages/settings";
+import SharedLayout from "./pages/sharedLayout"; // Add this import (create the file in your project root)
 import ProtectedRoute from "./protectedroute";
 
 function App() {
-  console.log("App component rendered"); // Debugging log
+  console.log("App component rendered");
 
   return (
     <BrowserRouter>
       <Routes>
+        {/* Public routes */}
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Register />} />
-        <Route path="/dashboard" element={<ProtectedRoute element={<Dashboard />} />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/flagged-articles" element={<ProtectedRoute element={<FlaggedArticles />} />} />
-        <Route path="/personalized-news" element={<ProtectedRoute element={<PersonalizedNews />} />} />
-        <Route path="/bookmarks" element={<ProtectedRoute element={<Bookmarks />} />} />
-        <Route path="/settings" element={<ProtectedRoute element={<Settings />} />} /> {/* Ensure this route is correct */}
         <Route path="/register" element={<Navigate to="/signup" />} />
-        <Route path="/admin" element={<ProtectedRoute element={<AdminPage />} requiredRole="admin" />} />
+        
+        {/* Protected routes with shared layout */}
+        <Route element={<ProtectedRoute element={<SharedLayout />} />}>
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/personalized-news" element={<PersonalizedNews />} />
+          <Route path="/bookmarks" element={<Bookmarks />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/flagged-articles" element={<FlaggedArticles />} />
+          <Route path="/admin" element={<ProtectedRoute element={<AdminPage />} requiredRole="admin" />} />
+        </Route>
       </Routes>
     </BrowserRouter>
   );
