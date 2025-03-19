@@ -1,3 +1,7 @@
+/* ==================== */
+/* Shared Layout Styles */
+/* ==================== */
+
 /* Dashboard Layout */
 .dashboard-layout {
   display: flex;
@@ -175,105 +179,60 @@
   margin-left: 72px;
 }
 
-.content-wrapper {
+/* Hover effect for nav items (expands slightly to the right) */
+.nav-item:hover, .logout-item:hover {
+  transform: scale(1.1) translateX(14px);
+  transition: transform 0.2s ease-in-out;
+}
+
+/* Zoom effect on text and icon while hovering */
+.nav-item:hover .nav-label, 
+.nav-item:hover .nav-icon, 
+.logout-item:hover .nav-icon {
+  transform: scale(1.1);
+  transition: transform 0.2s ease-in-out;
+}
+
+/* ==================== */
+/* Dashboard-Specific Styles */
+/* ==================== */
+
+.content-wrapper-dashboard {
+  padding: 20px;
   max-width: 1200px;
   margin: 0 auto;
 }
 
-.content-header {
-  margin-bottom: 2rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid #eee;
+.content-header-dashboard {
+  text-align: center;
+  margin-bottom: 20px;
 }
 
-.content-header h1 {
-  font-size: 1.8rem;
-  color: #333;
-}
-
-/* News Section */
-.news-section {
-  width: 100%;
-  max-width: 900px;
-}
-
-.news-title {
-  font-size: 1.8rem;
-  margin-bottom: 1.5rem;
-  color: #333;
-}
-
-.news-list {
-  list-style: none;
-  padding: 0;
-}
-
-.news-item {
-  background: white;
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-}
-
-.news-item h3 {
-  margin-top: 0;
-  color: #333;
-}
-
-.news-item a {
-  color: #1aa57a;
-  text-decoration: none;
-  font-weight: 500;
-}
-
-.news-item a:hover {
-  text-decoration: underline;
-}
-
-.news-source {
-  color: #666;
-  font-size: 0.9rem;
-  margin-top: 1rem;
-}
-
-/* Loading state */
-.loading {
+.search-and-filter-container-dashboard {
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
-  height: 100vh;
-  font-size: 1.5rem;
-  color: #1aa57a;
+  margin-bottom: 20px;
 }
 
-/* Search and Filter Section */
-.search-and-filter-container {
+.search-form-dashboard {
   display: flex;
-  gap: 1rem;
-  margin-bottom: 2rem;
+  align-items: center;
 }
 
-.search-form {
-  display: flex;
-  gap: 0.5rem;
-  flex-grow: 1;
-}
-
-.search-input-container {
+.search-input-container-dashboard {
   position: relative;
-  flex-grow: 1;
+  margin-right: 10px;
 }
 
-.search-input {
-  width: 100%;
-  padding: 0.75rem 2rem 0.75rem 1rem;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
-  font-size: 1rem;
+.search-input-dashboard {
+  padding: 10px;
+  width: 300px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
 }
 
-.clear-search-btn {
+.clear-search-btn-dashboard {
   position: absolute;
   right: 10px;
   top: 50%;
@@ -284,22 +243,77 @@
   color: #888;
 }
 
-.search-btn {
-  background-color: #3498db;
+.search-btn-dashboard {
+  padding: 10px 20px;
+  background-color: #007bff;
   color: white;
   border: none;
-  border-radius: 4px;
-  padding: 0 1rem;
+  border-radius: 5px;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
 }
 
-.no-results {
-  text-align: center;
-  padding: 2rem;
+.news-section-dashboard {
+  margin-top: 20px;
+}
+
+.news-title-dashboard {
+  margin-bottom: 20px;
+}
+
+.news-list-dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.news-item-dashboard {
   background-color: #f9f9f9;
-  border-radius: 4px;
+  padding: 20px;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.news-source-dashboard {
   color: #666;
+  font-size: 0.9em;
+}
+
+.news-actions-dashboard {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.news-action-btn-dashboard {
+  padding: 5px 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.no-results-dashboard {
+  text-align: center;
+  color: #666;
+}
+
+.pagination-dashboard {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.pagination-btn-dashboard {
+  padding: 5px 10px;
+  margin: 0 5px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.pagination-btn-dashboard.active {
+  background-color: #0056b3;
 }
