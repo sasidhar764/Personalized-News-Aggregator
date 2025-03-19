@@ -1,12 +1,12 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Home from "./pages/home";
 import Login from "./pages/login";
-import Register from "./pages/Register";
+import Register from "./pages/register";
 import Dashboard from "./pages/dashboard";
 import ForgotPassword from "./pages/forgotpassword";
 import ResetPassword from "./pages/resetpassword";
 import AdminPage from "./pages/adminpage";
-import FlaggedArticles from "./pages/FlaggedArticles";
+import FlaggedArticles from "./pages/flaggedarticles";
 import PersonalizedNews from "./pages/personalize";
 import Bookmarks from "./pages/bookmark";
 import Settings from "./pages/settings";

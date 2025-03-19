@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Login from "./login";
-import Register from "./Register";
+import Register from "./register";
 import ForgotPassword from "./forgotpassword";
 import "./home.css";
 
