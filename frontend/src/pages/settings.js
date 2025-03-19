@@ -22,6 +22,20 @@ const Settings = ({ onUpdateSuccess, onClose }) => {
     summary: storedUser?.summary || false,
   });
 
+  // Keep a copy of the original data for comparison
+  const [originalData] = useState({
+    username: storedUser?.username || "",
+    email: storedUser?.email || "",
+    preferredCategory: storedUser?.preferredCategory
+      ? Array.isArray(storedUser.preferredCategory)
+        ? [...storedUser.preferredCategory]
+        : [storedUser.preferredCategory]
+      : [],
+    country: storedUser?.country || "",
+    language: storedUser?.language || "",
+    summary: storedUser?.summary || false,
+  });
+
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -38,6 +52,28 @@ const Settings = ({ onUpdateSuccess, onClose }) => {
   ];
   const countryOptions = ["India", "USA", "UK", "Canada", "Australia", "Japan", "Germany"];
   const languageOptions = ["English", "Hindi", "Spanish", "French", "German", "Japanese", "Chinese"];
+
+  // Function to check if there are any changes in the form
+  const hasChanges = () => {
+    // Check for password change separately since it's not in originalData
+    const hasPasswordChange = formData.password.trim() !== "";
+    
+    // Compare arrays properly
+    const categoriesEqual = 
+      formData.preferredCategory.length === originalData.preferredCategory.length &&
+      formData.preferredCategory.every(cat => originalData.preferredCategory.includes(cat));
+    
+    // Check all other fields
+    return (
+      hasPasswordChange ||
+      formData.username !== originalData.username ||
+      formData.email !== originalData.email ||
+      !categoriesEqual ||
+      formData.country !== originalData.country ||
+      formData.language !== originalData.language ||
+      formData.summary !== originalData.summary
+    );
+  };
 
   // Handle input changes
   const handleInputChange = (e) => {
@@ -125,10 +161,30 @@ const Settings = ({ onUpdateSuccess, onClose }) => {
     }
   };
 
+  // Function to handle logout and redirect
+  const handleLogoutAndRedirect = () => {
+    // Clear user data from localStorage
+    localStorage.removeItem("user");
+    localStorage.removeItem("authToken");
+    
+    // Display success message
+    alert("Your profile has been updated successfully. Please log in again with your new credentials.");
+    
+    // Redirect to home page
+    window.location.href = "/";
+  };
+
   // Handle form submission
   const handleUpdate = async (e) => {
     e.preventDefault();
     if (isLoading) return;
+
+    // Check if there are any changes
+    if (!hasChanges()) {
+      setError("No changes detected. Please modify something before updating.");
+      setTimeout(() => setError(""), 3000);
+      return;
+    }
 
     setIsLoading(true);
     setError("");
@@ -142,14 +198,15 @@ const Settings = ({ onUpdateSuccess, onClose }) => {
     }
 
     // Check if only email preferences are being updated
-    const isOnlyEmailUpdate =
-      formData.summary !== storedUser.summary &&
-      formData.username === storedUser.username &&
-      formData.email === storedUser.email &&
+    const isOnlyEmailUpdate = 
+      formData.summary !== originalData.summary &&
+      formData.username === originalData.username &&
+      formData.email === originalData.email &&
       formData.password === "" &&
-      JSON.stringify(formData.preferredCategory) === JSON.stringify(storedUser.preferredCategory) &&
-      formData.country === storedUser.country &&
-      formData.language === storedUser.language;
+      formData.preferredCategory.length === originalData.preferredCategory.length &&
+      formData.preferredCategory.every(cat => originalData.preferredCategory.includes(cat)) &&
+      formData.country === originalData.country &&
+      formData.language === originalData.language;
 
     // Send profile update request if profile data is changed
     const updatedData = {
@@ -185,32 +242,32 @@ const Settings = ({ onUpdateSuccess, onClose }) => {
       }
 
       // Update email preferences if changed
-      if (formData.summary !== storedUser.summary) {
+      if (formData.summary !== originalData.summary) {
         await handleEmailUpdate(formData.summary);
       }
-
-      // Update localStorage with the new user data
-      const updatedUser = { ...storedUser, ...updatedData, summary: formData.summary };
-      localStorage.setItem("user", JSON.stringify(updatedUser));
 
       // Set success message based on what was updated
       if (isOnlyEmailUpdate) {
         setSuccess("Email preferences updated successfully!");
-      } else if (profileUpdated && formData.summary !== storedUser.summary) {
-        setSuccess("Profile and email preferences updated successfully!");
+        
+        // Only update local storage but don't logout for email preference changes
+        const updatedUser = { ...storedUser, summary: formData.summary };
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+        
+        // Notify parent component of the update
+        if (onUpdateSuccess) {
+          onUpdateSuccess(updatedUser);
+          setTimeout(() => onClose(), 1500);
+        }
       } else if (profileUpdated) {
-        setSuccess("Profile updated successfully!");
+        setSuccess("Profile updated successfully! You will be logged out in a moment.");
+        
+        // For profile updates, logout after a short delay
+        setTimeout(() => {
+          handleLogoutAndRedirect();
+        }, 2000);
       }
 
-      // Clear the success message after 3 seconds
-      setTimeout(() => {
-        setSuccess("");
-      }, 3000);
-
-      if (onUpdateSuccess) {
-        onUpdateSuccess(updatedUser);
-        setTimeout(() => onClose(), 1500);
-      }
     } catch (err) {
       console.error("Update Error:", err);
       setError(err.message || "Failed to update profile. Please try again.");
@@ -299,7 +356,11 @@ const Settings = ({ onUpdateSuccess, onClose }) => {
         {error && <div className="error-message_s">{error}</div>}
         {success && <div className="success-message_s">{success}</div>}
 
-        <button type="submit" className="update-button_s" disabled={isLoading}>
+        <button 
+          type="submit" 
+          className="update-button_s" 
+          disabled={isLoading || !hasChanges()}
+        >
           {isLoading ? "Updating..." : "Update"}
         </button>
       </form>
