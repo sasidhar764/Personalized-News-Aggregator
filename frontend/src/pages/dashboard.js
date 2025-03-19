@@ -131,7 +131,7 @@ function Dashboard() {
     setIsSearching(true);
     setIsFiltering(false);
     setActiveFilters(null);
-    console.log("hi",searchQuery)
+    console.log("hi", searchQuery);
 
     try {
       const requestBody = { search: searchQuery };
@@ -212,29 +212,29 @@ function Dashboard() {
   };
 
   if (isLoading) {
-    return <div className="loading">Loading dashboard...</div>;
+    return <div className="loading-dashboard">Loading dashboard...</div>;
   }
 
   return (
-    <div className="content-wrapper">
-      <header className="content-header">
+    <div className="content-wrapper-dashboard">
+      <header className="content-header-dashboard">
         <h1>News Dashboard</h1>
 
         {/* Search and Filter Section */}
-        <div className="search-and-filter-container">
-          <form onSubmit={handleSearch} className="search-form">
-            <div className="search-input-container">
+        <div className="search-and-filter-container-dashboard">
+          <form onSubmit={handleSearch} className="search-form-dashboard">
+            <div className="search-input-container-dashboard">
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search news..."
-                className="search-input"
+                className="search-input-dashboard"
               />
               {searchQuery && (
                 <button
                   type="button"
-                  className="clear-search-btn"
+                  className="clear-search-btn-dashboard"
                   onClick={clearSearch}
                   aria-label="Clear search"
                 >
@@ -242,7 +242,7 @@ function Dashboard() {
                 </button>
               )}
             </div>
-            <button type="submit" className="search-btn">
+            <button type="submit" className="search-btn-dashboard">
               <FaSearch /> Search
             </button>
           </form>
@@ -258,8 +258,8 @@ function Dashboard() {
         </div>
       </header>
 
-      <div className="news-section">
-        <h2 className="news-title">
+      <div className="news-section-dashboard">
+        <h2 className="news-title-dashboard">
           {isSearching && isFiltering
             ? "Search & Filter Results"
             : isSearching
@@ -268,13 +268,13 @@ function Dashboard() {
             ? "Filtered News"
             : "Headlines"}
         </h2>
-        <div className="news-list">
+        <div className="news-list-dashboard">
           {news.length > 0 ? (
             news.map((article, index) => (
-              <div key={index} className="news-item">
+              <div key={index} className="news-item-dashboard">
                 <h3>{article.title}</h3>
                 <p>{article.description}</p>
-                <p className="news-source">
+                <p className="news-source-dashboard">
                   Source: {article.source || "Unknown"} |
                   <a
                     href={article.url}
@@ -286,18 +286,18 @@ function Dashboard() {
                     Read more
                   </a>
                 </p>
-                <div className="news-actions">
-                  <button className="news-action-btn" onClick={() => handleBookmark(article)}>
-                    <FaBookmark className="action-icon" /> Bookmark
+                <div className="news-actions-dashboard">
+                  <button className="news-action-btn-dashboard" onClick={() => handleBookmark(article)}>
+                    <FaBookmark className="action-icon-dashboard" /> Bookmark
                   </button>
-                  <button className="news-action-btn" onClick={() => handleFlag(article)}>
-                    <FaFlag className="action-icon" /> Flag
+                  <button className="news-action-btn-dashboard" onClick={() => handleFlag(article)}>
+                    <FaFlag className="action-icon-dashboard" /> Flag
                   </button>
                 </div>
               </div>
             ))
           ) : (
-            <div className="no-results">
+            <div className="no-results-dashboard">
               {isSearching && isFiltering
                 ? "No articles found matching your search and filters. Try different criteria."
                 : isSearching

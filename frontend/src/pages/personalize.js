@@ -27,8 +27,10 @@ const handleReadMore = async (url) => {
 function PersonalizedNews() {
   const [news, setNews] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(9);
   const navigate = useNavigate();
-  const userData = JSON.parse(localStorage.getItem("user")); // Get user data from local storage
+  const userData = JSON.parse(localStorage.getItem("user"));
 
   useEffect(() => {
     const fetchPersonalizedNews = async () => {
@@ -39,7 +41,6 @@ function PersonalizedNews() {
           return;
         }
 
-        // Get the username from local storage
         const user = JSON.parse(localStorage.getItem("user"));
         const username = user?.username;
 
@@ -48,7 +49,6 @@ function PersonalizedNews() {
           return;
         }
 
-        // Fetch personalized news using the username
         const response = await fetch(
           `${process.env.REACT_APP_SERVER_URL}/news/preferred`,
           {
@@ -57,7 +57,7 @@ function PersonalizedNews() {
               "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,
             },
-            body: JSON.stringify({ username }), // Send username in the request body
+            body: JSON.stringify({ username }),
           }
         );
 
@@ -120,9 +120,6 @@ function PersonalizedNews() {
         }),
       });
 
-      // Remove the flagged article from the news array
-      // setNews((prevNews) => prevNews.filter((newsArticle) => newsArticle.url !== article.url));
-
       alert("Article flagged for review and removed from display!");
     } catch (error) {
       console.error("Error flagging article", error);
@@ -130,32 +127,110 @@ function PersonalizedNews() {
     }
   };
 
+  // Pagination Logic
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentNews = news.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(news.length / itemsPerPage);
+
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+  // Generate pagination items with ellipsis
+  const getPaginationItems = () => {
+    const items = [];
+    const maxPagesToShow = 5; // Show current page + 2 on each side if possible
+
+    if (totalPages <= maxPagesToShow) {
+      for (let i = 1; i <= totalPages; i++) {
+        items.push(
+          <button
+            key={i}
+            onClick={() => paginate(i)}
+            className={`pagination-btn ${currentPage === i ? "active" : ""}`}
+          >
+            {i}
+          </button>
+        );
+      }
+    } else {
+      // Always show first page
+      items.push(
+        <button
+          key={1}
+          onClick={() => paginate(1)}
+          className={`pagination-btn ${currentPage === 1 ? "active" : ""}`}
+        >
+          1
+        </button>
+      );
+
+      // Show ellipsis if needed before current page range
+      if (currentPage > 3) {
+        items.push(<span key="start-ellipsis" className="pagination-ellipsis">...</span>);
+      }
+
+      // Show pages around current page
+      const startPage = Math.max(2, currentPage - 1);
+      const endPage = Math.min(totalPages - 1, currentPage + 1);
+
+      for (let i = startPage; i <= endPage; i++) {
+        items.push(
+          <button
+            key={i}
+            onClick={() => paginate(i)}
+            className={`pagination-btn ${currentPage === i ? "active" : ""}`}
+          >
+            {i}
+          </button>
+        );
+      }
+
+      // Show ellipsis if needed after current page range
+      if (currentPage < totalPages - 2) {
+        items.push(<span key="end-ellipsis" className="pagination-ellipsis">...</span>);
+      }
+
+      // Always show last page
+      items.push(
+        <button
+          key={totalPages}
+          onClick={() => paginate(totalPages)}
+          className={`pagination-btn ${currentPage === totalPages ? "active" : ""}`}
+        >
+          {totalPages}
+        </button>
+      );
+    }
+
+    return items;
+  };
+
   if (isLoading) {
-    return <div className="loading">Loading personalized news...</div>;
+    return <div className="loading-personalize">Loading personalized news...</div>;
   }
 
   return (
-    <div className="personalized-news-container">
+    <div className="personalized-news-container-personalize">
       <h1>Personalized News</h1>
-      <div className="news-list">
-        {news.length > 0 ? (
-          news.map((article, index) => (
-            <div key={index} className="news-item">
+      <div className="news-list-personalize">
+        {currentNews.length > 0 ? (
+          currentNews.map((article, index) => (
+            <div key={index} className="news-item-personalize">
               <h3>{article.title}</h3>
               <p>{article.description}</p>
-              <p className="news-source">
+              <p className="news-source-personalize">
                 Source: {article.source || "Unknown"} |
                 <a
                   href={article.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  onClick={() => handleReadMore(article.url)} // Call handleReadMore here
+                  onClick={() => handleReadMore(article.url)}
                 >
                   {" "}
                   Read more
                 </a>
               </p>
-              <div className="news-actions">
+              <div className="news-actions-personalize">
                 <button onClick={() => handleBookmark(article)}>Bookmark</button>
                 <button onClick={() => handleFlag(article)}>Flag</button>
               </div>
@@ -165,6 +240,27 @@ function PersonalizedNews() {
           <p>No personalized news available.</p>
         )}
       </div>
+
+      {/* Pagination Controls */}
+      {news.length > itemsPerPage && (
+        <div className="pagination-personalize">
+          <button
+            onClick={() => paginate(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="pagination-btn"
+          >
+            Previous
+          </button>
+          {getPaginationItems()}
+          <button
+            onClick={() => paginate(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="pagination-btn"
+          >
+            Next
+          </button>
+        </div>
+      )}
     </div>
   );
 }

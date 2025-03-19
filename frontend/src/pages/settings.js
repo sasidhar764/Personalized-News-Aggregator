@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./settings.css";
 
 const Settings = ({ onUpdateSuccess, onClose }) => {
-  // Fetch user data from localStorage when the component mounts
+  const categoryDropdownRef = useRef(null);
   const storedUser = JSON.parse(localStorage.getItem("user"));
 
   const [formData, setFormData] = useState({
@@ -16,7 +16,20 @@ const Settings = ({ onUpdateSuccess, onClose }) => {
       : [],
     country: storedUser?.country || "",
     language: storedUser?.language || "",
-    summary: storedUser?.summary || false, // Add summary status
+    summary: storedUser?.summary || false,
+  });
+
+  const [originalData, setOriginalData] = useState({
+    username: storedUser?.username || "",
+    email: storedUser?.email || "",
+    preferredCategory: storedUser?.preferredCategory
+      ? Array.isArray(storedUser.preferredCategory)
+        ? [...storedUser.preferredCategory]
+        : [storedUser.preferredCategory]
+      : [],
+    country: storedUser?.country || "",
+    language: storedUser?.language || "",
+    summary: storedUser?.summary || false,
   });
 
   const [isLoading, setIsLoading] = useState(false);
@@ -36,55 +49,74 @@ const Settings = ({ onUpdateSuccess, onClose }) => {
   const countryOptions = ["India", "USA", "UK", "Canada", "Australia", "Japan", "Germany"];
   const languageOptions = ["English", "Hindi", "Spanish", "French", "German", "Japanese", "Chinese"];
 
-  // Handle input changes
+  useEffect(() => {
+    if (error) {
+      const errorTimeout = setTimeout(() => setError(""), 2000);
+      return () => clearTimeout(errorTimeout);
+    }
+    if (success) {
+      const successTimeout = setTimeout(() => setSuccess(""), 2000);
+      return () => clearTimeout(successTimeout);
+    }
+  }, [error, success]);
+
+  const hasChanges = () => {
+    const hasPasswordChange = formData.password.trim() !== "";
+    const categoriesEqual =
+      formData.preferredCategory.length === originalData.preferredCategory.length &&
+      formData.preferredCategory.every((cat) => originalData.preferredCategory.includes(cat));
+
+    return (
+      hasPasswordChange ||
+      formData.username !== originalData.username ||
+      formData.email !== originalData.email ||
+      !categoriesEqual ||
+      formData.country !== originalData.country ||
+      formData.language !== originalData.language ||
+      formData.summary !== originalData.summary
+    );
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Toggle category selection
-  const toggleCategorySelection = (category) => {
-    if (formData.preferredCategory.includes(category)) {
-      // Remove category if already selected
-      setFormData({
-        ...formData,
-        preferredCategory: formData.preferredCategory.filter((item) => item !== category),
-      });
-    } else {
-      // Add category if not already selected
-      setFormData({
-        ...formData,
-        preferredCategory: [...formData.preferredCategory, category],
-      });
-    }
+  const toggleCategorySelection = (category, e) => {
+    e.stopPropagation();
+    setFormData((prev) => {
+      if (prev.preferredCategory.includes(category)) {
+        return {
+          ...prev,
+          preferredCategory: prev.preferredCategory.filter((item) => item !== category),
+        };
+      } else {
+        return {
+          ...prev,
+          preferredCategory: [...prev.preferredCategory, category],
+        };
+      }
+    });
   };
 
-  // Toggle category dropdown
   const toggleCategoryDropdown = () => {
     setCategoryDropdownOpen(!categoryDropdownOpen);
   };
 
-  // Close dropdown when clicking outside
-  const handleClickOutside = (e) => {
-    if (!e.target.closest(".category-dropdown")) {
-      setCategoryDropdownOpen(false);
-    }
-  };
-
-  // Add/remove event listener for clicking outside the dropdown
   useEffect(() => {
+    function handleClickOutside(event) {
+      if (categoryDropdownRef.current && !categoryDropdownRef.current.contains(event.target)) {
+        setCategoryDropdownOpen(false);
+      }
+    }
     if (categoryDropdownOpen) {
       document.addEventListener("mousedown", handleClickOutside);
-    } else {
-      document.removeEventListener("mousedown", handleClickOutside);
     }
-
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [categoryDropdownOpen]);
 
-  // Handle email update (enable/disable email updates)
   const handleEmailUpdate = async (enable) => {
     try {
       const response = await fetch(`${process.env.REACT_APP_SERVER_URL}/news/togglesummary`, {
@@ -103,13 +135,9 @@ const Settings = ({ onUpdateSuccess, onClose }) => {
         throw new Error("Failed to update email preferences");
       }
 
-      // Update local storage with the new summary flag
       const updatedUser = { ...storedUser, summary: enable };
       localStorage.setItem("user", JSON.stringify(updatedUser));
-
-      // Update formData state to reflect the change
       setFormData((prev) => ({ ...prev, summary: enable }));
-
       alert(`Email updates ${enable ? "enabled" : "disabled"} successfully!`);
     } catch (error) {
       console.error("Error updating email preferences", error);
@@ -117,10 +145,21 @@ const Settings = ({ onUpdateSuccess, onClose }) => {
     }
   };
 
-  // Handle form submission
+  const handleLogoutAndRedirect = () => {
+    localStorage.removeItem("user");
+    localStorage.removeItem("authToken");
+    alert("Your profile has been updated successfully. Please log in again with your new credentials.");
+    window.location.href = "/";
+  };
+
   const handleUpdate = async (e) => {
     e.preventDefault();
     if (isLoading) return;
+
+    if (!hasChanges()) {
+      setError("No changes detected. Please modify something before updating.");
+      return;
+    }
 
     setIsLoading(true);
     setError("");
@@ -133,17 +172,16 @@ const Settings = ({ onUpdateSuccess, onClose }) => {
       return;
     }
 
-    // Check if only email preferences are being updated
     const isOnlyEmailUpdate =
-      formData.summary !== storedUser.summary &&
-      formData.username === storedUser.username &&
-      formData.email === storedUser.email &&
+      formData.summary !== originalData.summary &&
+      formData.username === originalData.username &&
+      formData.email === originalData.email &&
       formData.password === "" &&
-      JSON.stringify(formData.preferredCategory) === JSON.stringify(storedUser.preferredCategory) &&
-      formData.country === storedUser.country &&
-      formData.language === storedUser.language;
+      formData.preferredCategory.length === originalData.preferredCategory.length &&
+      formData.preferredCategory.every((cat) => originalData.preferredCategory.includes(cat)) &&
+      formData.country === originalData.country &&
+      formData.language === originalData.language;
 
-    // Send profile update request if profile data is changed
     const updatedData = {
       username: formData.username,
       email: formData.email || null,
@@ -157,7 +195,6 @@ const Settings = ({ onUpdateSuccess, onClose }) => {
     try {
       let profileUpdated = false;
 
-      // Update profile if any profile data is changed
       if (!isOnlyEmailUpdate) {
         const profileResponse = await fetch(`${process.env.REACT_APP_SERVER_URL}/auth/update-user`, {
           method: "PUT",
@@ -176,32 +213,32 @@ const Settings = ({ onUpdateSuccess, onClose }) => {
         profileUpdated = true;
       }
 
-      // Update email preferences if changed
-      if (formData.summary !== storedUser.summary) {
+      if (formData.summary !== originalData.summary) {
         await handleEmailUpdate(formData.summary);
       }
 
-      // Update localStorage with the new user data
-      const updatedUser = { ...storedUser, ...updatedData, summary: formData.summary };
-      localStorage.setItem("user", JSON.stringify(updatedUser));
+      setOriginalData({
+        username: formData.username,
+        email: formData.email,
+        preferredCategory: [...formData.preferredCategory],
+        country: formData.country,
+        language: formData.language,
+        summary: formData.summary,
+      });
 
-      // Set success message based on what was updated
       if (isOnlyEmailUpdate) {
         setSuccess("Email preferences updated successfully!");
-      } else if (profileUpdated && formData.summary !== storedUser.summary) {
-        setSuccess("Profile and email preferences updated successfully!");
+        const updatedUser = { ...storedUser, summary: formData.summary };
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+        if (onUpdateSuccess) {
+          onUpdateSuccess(updatedUser);
+          setTimeout(() => onClose(), 1500);
+        }
       } else if (profileUpdated) {
-        setSuccess("Profile updated successfully!");
-      }
-
-      // Clear the success message after 3 seconds
-      setTimeout(() => {
-        setSuccess("");
-      }, 3000);
-
-      if (onUpdateSuccess) {
-        onUpdateSuccess(updatedUser);
-        setTimeout(() => onClose(), 1500);
+        setSuccess("Profile updated successfully! You will be logged out in a moment.");
+        setTimeout(() => {
+          handleLogoutAndRedirect();
+        }, 2000);
       }
     } catch (err) {
       console.error("Update Error:", err);
@@ -211,126 +248,177 @@ const Settings = ({ onUpdateSuccess, onClose }) => {
     }
   };
 
+  // New function to handle cancel action
+  const handleCancel = () => {
+    // Reset formData to originalData to discard changes
+    setFormData({
+      username: originalData.username,
+      email: originalData.email,
+      password: "", // Password should be reset as it’s not stored in originalData
+      preferredCategory: [...originalData.preferredCategory], // Ensure a new array copy
+      country: originalData.country,
+      language: originalData.language,
+      summary: originalData.summary,
+    });
+    // Close the dropdown if open
+    setCategoryDropdownOpen(false);
+    // Call the onClose prop to close the form/modal
+    onClose();
+  };
+
   return (
-    <div className="settings-container">
-      <h2>Settings</h2>
-      <form onSubmit={handleUpdate}>
-        <div className="form-group">
-          <label>Username</label>
-          <input
-            type="text"
-            name="username"
-            value={formData.username}
-            onChange={handleInputChange}
-            placeholder={storedUser?.username || "Enter username"}
-            required
-          />
+    <div className="settings-wrapper_s">
+      <div className="settings-container_s">
+        <div className="settings-header_s">
+          <h2>Account Settings</h2>
         </div>
-
-        <div className="form-group">
-          <label>Email</label>
-          <input
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleInputChange}
-            placeholder={storedUser?.email || "Enter email"}
-            required
-          />
-        </div>
-
-        <div className="form-group">
-          <label>Password</label>
-          <input
-            type="password"
-            name="password"
-            value={formData.password}
-            onChange={handleInputChange}
-            placeholder="Leave blank to keep current password"
-          />
-        </div>
-
-        <div className="form-group">
-          <label>Preferred Categories</label>
-          <div className="category-dropdown">
-            <button type="button" onClick={toggleCategoryDropdown}>
-              {formData.preferredCategory.length > 0
-                ? formData.preferredCategory.join(", ")
-                : storedUser?.preferredCategory?.join(", ") || "Select categories"}
-            </button>
-            {categoryDropdownOpen && (
-              <div className="dropdown-content">
-                {categoryOptions.map((category) => (
-                  <label key={category}>
-                    <input
-                      type="checkbox"
-                      checked={formData.preferredCategory.includes(category)}
-                      onChange={() => toggleCategorySelection(category)}
-                    />
-                    {category}
-                  </label>
-                ))}
+        
+        <form onSubmit={handleUpdate} className="settings-form_s">
+          <div className="form-section_s">
+            <h3>Profile Information</h3>
+            <div className="form-grid-3_s">
+              <div className="form-group_s">
+                <label>Username</label>
+                <input 
+                  type="text" 
+                  name="username" 
+                  value={formData.username} 
+                  onChange={handleInputChange} 
+                  required 
+                />
               </div>
-            )}
+  
+              <div className="form-group_s">
+                <label>Email Address</label>
+                <input 
+                  type="email" 
+                  name="email" 
+                  value={formData.email} 
+                  onChange={handleInputChange} 
+                  required 
+                />
+              </div>
+  
+              <div className="form-group_s">
+                <label>Password</label>
+                <input 
+                  type="password" 
+                  name="password" 
+                  value={formData.password} 
+                  onChange={handleInputChange} 
+                  placeholder="Enter new password to change"
+                />
+              </div>
+            </div>
           </div>
-        </div>
-
-        <div className="form-group">
-          <label>Country</label>
-          <select
-            name="country"
-            value={formData.country}
-            onChange={handleInputChange}
-            required
-          >
-            <option value="">{storedUser?.country || "Select a country"}</option>
-            {countryOptions.map((country) => (
-              <option key={country} value={country}>
-                {country}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="form-group">
-          <label>Language</label>
-          <select
-            name="language"
-            value={formData.language}
-            onChange={handleInputChange}
-            required
-          >
-            <option value="">{storedUser?.language || "Select a language"}</option>
-            {languageOptions.map((language) => (
-              <option key={language} value={language}>
-                {language}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Email Updates Toggle */}
-        <div className="form-group email-toggle-group">
-          <label>Email Updates</label>
-          <div className="email-updates-toggle">
-            <label className="switch">
-              <input
-                type="checkbox"
-                checked={formData.summary}
-                onChange={(e) => setFormData((prev) => ({ ...prev, summary: e.target.checked }))}
-              />
-              <span className="slider round"></span>
-            </label>
+  
+          <div className="form-section_s">
+            <h3>Preferences</h3>
+            <div className="form-group_s">
+              <label>Preferred Categories</label>
+              <div className="category-dropdown_s" ref={categoryDropdownRef}>
+                <button type="button" onClick={toggleCategoryDropdown}>
+                  {formData.preferredCategory.length > 0 
+                    ? formData.preferredCategory.join(", ") 
+                    : "Select your interests"}
+                  <span className="dropdown-arrow_s">▼</span>
+                </button>
+                {categoryDropdownOpen && (
+                  <div className="dropdown-menu_s">
+                    <div className="dropdown-menu-inner_s">
+                      {categoryOptions.map((category) => (
+                        <label 
+                          key={category} 
+                          className={formData.preferredCategory.includes(category) ? "selected_s" : ""}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={formData.preferredCategory.includes(category)}
+                            onChange={(e) => toggleCategorySelection(category, e)}
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                          {category}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+  
+            <div className="form-grid-3_s">
+              <div className="form-group_s">
+                <label>Country</label>
+                <select 
+                  name="country" 
+                  value={formData.country} 
+                  onChange={handleInputChange} 
+                  required
+                >
+                  <option value="">Select Country</option>
+                  {countryOptions.map((country) => (
+                    <option key={country} value={country}>
+                      {country}
+                    </option>
+                  ))}
+                </select>
+              </div>
+  
+              <div className="form-group_s">
+                <label>Language</label>
+                <select 
+                  name="language" 
+                  value={formData.language} 
+                  onChange={handleInputChange} 
+                  required
+                >
+                  <option value="">Select Language</option>
+                  {languageOptions.map((language) => (
+                    <option key={language} value={language}>
+                      {language}
+                    </option>
+                  ))}
+                </select>
+              </div>
+  
+              <div className="form-group_s toggle-group_s">
+                <label>Email Notifications</label>
+                <label className="switch_s">
+                  <input 
+                    type="checkbox" 
+                    checked={formData.summary} 
+                    onChange={(e) => setFormData((prev) => ({ ...prev, summary: e.target.checked }))} 
+                  />
+                  <span className="slider_s"></span>
+                </label>
+              </div>
+            </div>
           </div>
-        </div>
-
-        {error && <div className="error-message">{error}</div>}
-        {success && <div className="success-message">{success}</div>}
-
-        <button type="submit" disabled={isLoading}>
-          {isLoading ? "Updating..." : "Update"}
-        </button>
-      </form>
+  
+          <div className="form-actions_s">
+            {error && <div className="alert_s alert-error_s">{error}</div>}
+            {success && <div className="alert_s alert-success_s">{success}</div>}
+            
+            <div className="button-group_s">
+              <button 
+                type="submit" 
+                className="submit-btn_s" 
+                disabled={isLoading || !hasChanges()}
+              >
+                {isLoading ? "Saving..." : "Save Changes"}
+              </button>
+              <button 
+                type="button" 
+                className="cancel-btn_s" 
+                onClick={handleCancel} // Updated to use handleCancel
+                disabled={isLoading}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
     </div>
   );
 };
