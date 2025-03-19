@@ -182,70 +182,72 @@
   font-size: 1rem;
 }
 
-/* Updated Pagination Styles to Match the Image */
+/* Pagination Styles */
 .pagination-bookmark {
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 1rem;
   margin-top: 2rem;
-  padding: 1rem 0;
-  background: #f8fafc; /* Light background to match the image */
-  border-radius: 8px;
+  padding: 1rem;
 }
 
 .pagination-nav-button-bookmark {
   padding: 0.5rem 1rem;
-  font-size: 1rem;
-  font-weight: 500;
-  border: none;
-  background: none;
-  color: #6b7280; /* Gray color for PREV/NEXT */
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: 1px solid #d1d5db;
+  border-radius: 50px;
+  background: #ffffff;
+  color: #1a57a7;
   cursor: pointer;
-  text-transform: uppercase;
-  transition: color 0.3s ease;
+  transition: background 0.3s ease, color 0.3s ease, transform 0.3s ease;
 }
 
 .pagination-nav-button-bookmark:hover {
-  color: #10b981; /* Green on hover */
+  background: #e5e7eb;
+  transform: translateY(-2px);
 }
 
 .pagination-nav-button-bookmark:disabled {
-  color: #d1d5db; /* Lighter gray when disabled */
+  color: #9ca3af;
   cursor: not-allowed;
+  border-color: #e5e7eb;
 }
 
 .pagination-numbers-bookmark {
   display: flex;
   gap: 0.5rem;
-  align-items: center;
 }
 
 .pagination-button-bookmark {
-  width: 32px;
-  height: 32px;
-  font-size: 1rem;
-  font-weight: 500;
+  width: 36px;
+  height: 36px;
+  font-size: 0.9rem;
+  font-weight: 600;
   border: none;
   border-radius: 50%;
-  background: #e5e7eb; /* Light gray background for non-active pages */
-  color: #6b7280; /* Gray text */
+  background: #ffffff;
+  color: #1a57a7;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.3s ease, color 0.3s ease;
+  transition: background 0.3s ease, color 0.3s ease, transform 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .pagination-button-bookmark:hover {
-  background: #10b981; /* Green on hover */
+  background: linear-gradient(45deg, #1aa57a, #26c6da);
   color: #ffffff;
+  transform: translateY(-2px);
 }
 
 .pagination-button-bookmark.active {
-  background: #10b981; /* Green for active page */
+  background: linear-gradient(45deg, #1aa57a, #26c6da);
   color: #ffffff;
-  font-weight: 600;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(26, 165, 122, 0.4);
 }
 
 /* Animations */
@@ -289,20 +291,15 @@
     height: 36px;
   }
 
-  .pagination-bookmark {
-    gap: 0.75rem;
-    padding: 0.75rem 0;
-  }
-
   .pagination-nav-button-bookmark {
     padding: 0.4rem 0.8rem;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
   }
 
   .pagination-button-bookmark {
-    width: 28px;
-    height: 28px;
-    font-size: 0.9rem;
+    width: 32px;
+    height: 32px;
+    font-size: 0.8rem;
   }
 }
 
