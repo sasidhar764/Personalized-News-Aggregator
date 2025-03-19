@@ -122,19 +122,21 @@ function Dashboard() {
     }
   };
 
-  const handleSearch = async (e) => {
-    e.preventDefault();
-    if (!searchQuery.trim()) {
-      return;
-    }
-
-    setIsSearching(true);
-    setIsFiltering(false);
-    setActiveFilters(null);
-    console.log("hi", searchQuery);
-
+  // Helper function to fetch news with combined search and filter
+  const fetchFilteredAndSearchedNews = async (searchTerm, filters) => {
     try {
-      const requestBody = { search: searchQuery };
+      // Combine search term and filters in request body
+      const requestBody = {};
+      
+      if (searchTerm) {
+        requestBody.search = searchTerm;
+      }
+      
+      if (filters) {
+        // Spread filter properties into request body
+        Object.assign(requestBody, filters);
+      }
+      
       const response = await fetch(`${process.env.REACT_APP_SERVER_URL}/news`, {
         method: "POST",
         headers: {
@@ -145,14 +147,32 @@ function Dashboard() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to search for news");
+        throw new Error("Failed to fetch news");
       }
 
       const data = await response.json();
       setNews(data || []);
     } catch (error) {
-      console.error("Error searching news", error);
-      alert("Failed to search for news");
+      console.error("Error fetching news with combined criteria", error);
+      alert("Failed to fetch news");
+    }
+  };
+
+  const handleSearch = async (e) => {
+    e.preventDefault();
+    if (!searchQuery.trim()) {
+      return;
+    }
+
+    setIsSearching(true);
+    
+    // Keep existing filters if already active
+    if (isFiltering && activeFilters) {
+      // Fetch news with both search and filters
+      fetchFilteredAndSearchedNews(searchQuery, activeFilters);
+    } else {
+      // Just search without filters
+      fetchFilteredAndSearchedNews(searchQuery, null);
     }
   };
 
@@ -161,8 +181,8 @@ function Dashboard() {
     setIsSearching(false);
 
     if (isFiltering && activeFilters) {
-      // If filters are active, reapply them
-      handleApplyFilter(activeFilters);
+      // If filters are active, apply just the filters
+      fetchFilteredAndSearchedNews(null, activeFilters);
     } else {
       // Otherwise fetch headlines
       fetchHeadlines();
@@ -171,30 +191,14 @@ function Dashboard() {
 
   const handleApplyFilter = async (filters) => {
     setIsFiltering(true);
-    setIsSearching(false);
-    setSearchQuery("");
     setActiveFilters(filters);
 
-    try {
-      const requestBody = { ...filters };
-      const response = await fetch(`${process.env.REACT_APP_SERVER_URL}/news`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-        },
-        body: JSON.stringify(requestBody),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to filter news");
-      }
-
-      const data = await response.json();
-      setNews(data || []);
-    } catch (error) {
-      console.error("Error applying filters", error);
-      alert("Failed to filter news");
+    if (isSearching && searchQuery) {
+      // If there's an active search, combine with filters
+      fetchFilteredAndSearchedNews(searchQuery, filters);
+    } else {
+      // Just apply filters without search
+      fetchFilteredAndSearchedNews(null, filters);
     }
   };
 
@@ -203,8 +207,8 @@ function Dashboard() {
     setActiveFilters(null);
 
     if (searchQuery.trim()) {
-      // If there's a search query, reapply just the search
-      handleSearch({ preventDefault: () => {} });
+      // If there's a search query, apply just the search
+      fetchFilteredAndSearchedNews(searchQuery, null);
     } else {
       // Otherwise fetch headlines
       fetchHeadlines();
