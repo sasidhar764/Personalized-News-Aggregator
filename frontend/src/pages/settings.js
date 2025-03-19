@@ -1,7 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./settings.css";
 
 const Settings = ({ onUpdateSuccess, onClose }) => {
+  // Create a ref for the dropdown
+  const categoryDropdownRef = useRef(null);
+  
   // Fetch user data from localStorage when the component mounts
   const storedUser = JSON.parse(localStorage.getItem("user"));
 
@@ -16,7 +19,7 @@ const Settings = ({ onUpdateSuccess, onClose }) => {
       : [],
     country: storedUser?.country || "",
     language: storedUser?.language || "",
-    summary: storedUser?.summary || false, // Add summary status
+    summary: storedUser?.summary || false,
   });
 
   const [isLoading, setIsLoading] = useState(false);
@@ -43,20 +46,26 @@ const Settings = ({ onUpdateSuccess, onClose }) => {
   };
 
   // Toggle category selection
-  const toggleCategorySelection = (category) => {
-    if (formData.preferredCategory.includes(category)) {
-      // Remove category if already selected
-      setFormData({
-        ...formData,
-        preferredCategory: formData.preferredCategory.filter((item) => item !== category),
-      });
-    } else {
-      // Add category if not already selected
-      setFormData({
-        ...formData,
-        preferredCategory: [...formData.preferredCategory, category],
-      });
-    }
+  const toggleCategorySelection = (category, e) => {
+    // Stop propagation to prevent dropdown from closing
+    e.stopPropagation();
+    
+    setFormData(prev => {
+      // Check if category is already selected
+      if (prev.preferredCategory.includes(category)) {
+        // Remove category if already selected
+        return {
+          ...prev,
+          preferredCategory: prev.preferredCategory.filter(item => item !== category)
+        };
+      } else {
+        // Add category if not already selected
+        return {
+          ...prev,
+          preferredCategory: [...prev.preferredCategory, category]
+        };
+      }
+    });
   };
 
   // Toggle category dropdown
@@ -65,20 +74,19 @@ const Settings = ({ onUpdateSuccess, onClose }) => {
   };
 
   // Close dropdown when clicking outside
-  const handleClickOutside = (e) => {
-    if (!e.target.closest(".category-dropdown")) {
-      setCategoryDropdownOpen(false);
-    }
-  };
-
-  // Add/remove event listener for clicking outside the dropdown
   useEffect(() => {
+    function handleClickOutside(event) {
+      if (categoryDropdownRef.current && !categoryDropdownRef.current.contains(event.target)) {
+        setCategoryDropdownOpen(false);
+      }
+    }
+
+    // Add event listener only when dropdown is open
     if (categoryDropdownOpen) {
       document.addEventListener("mousedown", handleClickOutside);
-    } else {
-      document.removeEventListener("mousedown", handleClickOutside);
     }
-
+    
+    // Clean up the event listener
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
@@ -212,60 +220,39 @@ const Settings = ({ onUpdateSuccess, onClose }) => {
   };
 
   return (
-    <div className="settings-container">
+    <div className="settings-container_s">
       <h2>Settings</h2>
       <form onSubmit={handleUpdate}>
-        <div className="form-group">
+        <div className="form-group_s">
           <label>Username</label>
-          <input
-            type="text"
-            name="username"
-            value={formData.username}
-            onChange={handleInputChange}
-            placeholder={storedUser?.username || "Enter username"}
-            required
-          />
+          <input type="text" name="username" value={formData.username} onChange={handleInputChange} required />
         </div>
 
-        <div className="form-group">
+        <div className="form-group_s">
           <label>Email</label>
-          <input
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleInputChange}
-            placeholder={storedUser?.email || "Enter email"}
-            required
-          />
+          <input type="email" name="email" value={formData.email} onChange={handleInputChange} required />
         </div>
 
-        <div className="form-group">
+        <div className="form-group_s">
           <label>Password</label>
-          <input
-            type="password"
-            name="password"
-            value={formData.password}
-            onChange={handleInputChange}
-            placeholder="Leave blank to keep current password"
-          />
+          <input type="password" name="password" value={formData.password} onChange={handleInputChange} placeholder="Leave empty to keep your current password" />
         </div>
 
-        <div className="form-group">
+        <div className="form-group_s">
           <label>Preferred Categories</label>
-          <div className="category-dropdown">
+          <div className="category-dropdown_s" ref={categoryDropdownRef}>
             <button type="button" onClick={toggleCategoryDropdown}>
-              {formData.preferredCategory.length > 0
-                ? formData.preferredCategory.join(", ")
-                : storedUser?.preferredCategory?.join(", ") || "Select categories"}
+              {formData.preferredCategory.length > 0 ? formData.preferredCategory.join(", ") : "Select categories"}
             </button>
             {categoryDropdownOpen && (
-              <div className="dropdown-content">
+              <div className="dropdown-content_s">
                 {categoryOptions.map((category) => (
-                  <label key={category}>
+                  <label key={category} className={formData.preferredCategory.includes(category) ? "selected" : ""}>
                     <input
                       type="checkbox"
                       checked={formData.preferredCategory.includes(category)}
-                      onChange={() => toggleCategorySelection(category)}
+                      onChange={(e) => toggleCategorySelection(category, e)}
+                      onClick={(e) => e.stopPropagation()}
                     />
                     {category}
                   </label>
@@ -275,15 +262,10 @@ const Settings = ({ onUpdateSuccess, onClose }) => {
           </div>
         </div>
 
-        <div className="form-group">
+        <div className="form-group_s">
           <label>Country</label>
-          <select
-            name="country"
-            value={formData.country}
-            onChange={handleInputChange}
-            required
-          >
-            <option value="">{storedUser?.country || "Select a country"}</option>
+          <select name="country" value={formData.country} onChange={handleInputChange} required>
+            <option value="">Select Country</option>
             {countryOptions.map((country) => (
               <option key={country} value={country}>
                 {country}
@@ -292,15 +274,10 @@ const Settings = ({ onUpdateSuccess, onClose }) => {
           </select>
         </div>
 
-        <div className="form-group">
+        <div className="form-group_s">
           <label>Language</label>
-          <select
-            name="language"
-            value={formData.language}
-            onChange={handleInputChange}
-            required
-          >
-            <option value="">{storedUser?.language || "Select a language"}</option>
+          <select name="language" value={formData.language} onChange={handleInputChange} required>
+            <option value="">Select Language</option>
             {languageOptions.map((language) => (
               <option key={language} value={language}>
                 {language}
@@ -309,25 +286,20 @@ const Settings = ({ onUpdateSuccess, onClose }) => {
           </select>
         </div>
 
-        {/* Email Updates Toggle */}
-        <div className="form-group email-toggle-group">
+        <div className="form-group_s email-toggle-group_s">
           <label>Email Updates</label>
-          <div className="email-updates-toggle">
-            <label className="switch">
-              <input
-                type="checkbox"
-                checked={formData.summary}
-                onChange={(e) => setFormData((prev) => ({ ...prev, summary: e.target.checked }))}
-              />
-              <span className="slider round"></span>
+          <div className="email-updates-toggle_s">
+            <label className="switch_s">
+              <input type="checkbox" checked={formData.summary} onChange={(e) => setFormData((prev) => ({ ...prev, summary: e.target.checked }))} />
+              <span className="slider_s round_s"></span>
             </label>
           </div>
         </div>
 
-        {error && <div className="error-message">{error}</div>}
-        {success && <div className="success-message">{success}</div>}
+        {error && <div className="error-message_s">{error}</div>}
+        {success && <div className="success-message_s">{success}</div>}
 
-        <button type="submit" disabled={isLoading}>
+        <button type="submit" className="update-button_s" disabled={isLoading}>
           {isLoading ? "Updating..." : "Update"}
         </button>
       </form>
