@@ -18,9 +18,7 @@ class llmcontroller {
       if (context && context.username) {
         prompt += `The user is ${context.username}. `;
       }
-      prompt += `Assist with news-related queries, provide article recommendations, summarize news, or help manage bookmarks based on user preferences. Answer concisely and naturally, and only respond to the user's exact input without assuming additional questions.<|user|>${message}<|assistant|>`;
-
-      console.log('Prompt:', prompt);
+      prompt += `Assist with news-related queries, summarize news. Answer concisely and naturally, and only respond to the user's exact input without assuming additional questions.<|user|>${message}<|assistant|>`;
 
       const response = await hf.textGeneration({
         model: 'mistralai/Mistral-7B-Instruct-v0.2',

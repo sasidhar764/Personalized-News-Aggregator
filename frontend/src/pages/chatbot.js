@@ -82,7 +82,7 @@ const NewsChatBot = ({ newsData }) => {
       <div className="chat-header">
         <h3>News Assistant</h3>
         <div>
-          <button className="reset-chat-button" onClick={handleResetChat}>Reset Chat</button>
+          <button className="reset-chat-button" onClick={handleResetChat}>New Chat</button>
         </div>
       </div>
       <div className="chat-messages" ref={chatMessagesRef}>
