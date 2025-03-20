@@ -5,13 +5,18 @@ const sendSummaryEmail = require("../utils/summarizer.utils");
 
 const getNews = async (req, res) => {
     try {
-        const { language, country, category, startDate, endDate, search } = req.body;
-
+        const { language, country, categories, startDate, endDate, search } = req.body;
+        category = categories;
         let filter = {};
-
         if (language) filter.language = language;
         if (country) filter.country = country;
-        if (category) filter.category = category;
+        if (category) {
+            if (Array.isArray(category) && category.length > 0) {
+                filter.category = { $in: category };
+            } else if (typeof category === "string" && category) {
+                filter.category = category;
+            }
+        }
         if (startDate || endDate) {
             filter.publishedAt = {};
             if (startDate) filter.publishedAt.$gte = new Date(startDate);
@@ -24,9 +29,7 @@ const getNews = async (req, res) => {
                 { description: regex }
             ];
         }
-
         const news = await News.find(filter).sort({ publishedAt: -1 });
-
         res.json(news);
     } catch (error) {
         console.error("Error fetching news:", error.message);
