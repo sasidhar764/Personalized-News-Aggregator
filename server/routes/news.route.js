@@ -13,6 +13,7 @@ const {
     removeFlags,
     toggleNewsSummary
 } = require("../controllers/news.controller");
+const { llmcontroller } = require("../controllers/llm.controller");
 
 router.post("/", getNews);
 router.get("/headlines", getHeadlines);
@@ -25,5 +26,6 @@ router.delete("/deletearticle", deleteArticle);
 router.get("/flaggedarticles", getFlaggedArticles);
 router.post("/removeflags", removeFlags);
 router.post("/togglesummary", toggleNewsSummary);
+router.post('/chat', llmcontroller.getChatResponse);
 
 module.exports = router;

@@ -11,12 +11,14 @@ import {
   FaBookmark,
   FaStar,
 } from "react-icons/fa";
+import ChatBot from "./chatbot"; // Import the ChatBot component
 
 function SharedLayout() {
   const navigate = useNavigate();
   const [userData, setUserData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [navOpen, setNavOpen] = useState(true);
+  const [isChatOpen, setIsChatOpen] = useState(false); // State to toggle chatbot
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -44,6 +46,10 @@ function SharedLayout() {
     setNavOpen(!navOpen);
   };
 
+  const toggleChat = () => {
+    setIsChatOpen(!isChatOpen);
+  };
+
   if (isLoading) {
     return <div className="loading">Loading...</div>;
   }
@@ -66,37 +72,46 @@ function SharedLayout() {
           {navOpen && (
             <span className="user-name">
               {userData?.username
-                ? userData.username.charAt(0).toUpperCase() + userData.username.slice(1)
+                ? userData.username.charAt(0).toUpperCase() +
+                  userData.username.slice(1)
                 : "User"}
             </span>
           )}
         </div>
 
         <div className="nav-items">
-          <div 
-            className={`nav-item ${window.location.pathname === "/dashboard" ? "active" : ""}`} 
+          <div
+            className={`nav-item ${
+              window.location.pathname === "/dashboard" ? "active" : ""
+            }`}
             onClick={() => navigate("/dashboard")}
           >
             <FaHome className="nav-icon" />
             {navOpen && <span className="nav-label">Dashboard</span>}
           </div>
-          <div 
-            className={`nav-item ${window.location.pathname === "/personalized-news" ? "active" : ""}`} 
+          <div
+            className={`nav-item ${
+              window.location.pathname === "/personalized-news" ? "active" : ""
+            }`}
             onClick={() => navigate("/personalized-news")}
           >
             <FaStar className="nav-icon" />
             {navOpen && <span className="nav-label">Personalized News</span>}
           </div>
-          <div 
-            className={`nav-item ${window.location.pathname === "/bookmarks" ? "active" : ""}`} 
+          <div
+            className={`nav-item ${
+              window.location.pathname === "/bookmarks" ? "active" : ""
+            }`}
             onClick={() => navigate("/bookmarks")}
           >
             <FaBookmark className="nav-icon" />
             {navOpen && <span className="nav-label">Bookmarks</span>}
           </div>
           {userData?.role === "admin" && (
-            <div 
-              className={`nav-item ${window.location.pathname === "/flagged-articles" ? "active" : ""}`} 
+            <div
+              className={`nav-item ${
+                window.location.pathname === "/flagged-articles" ? "active" : ""
+              }`}
               onClick={() => navigate("/flagged-articles")}
             >
               <FaFlag className="nav-icon" />
@@ -104,16 +119,20 @@ function SharedLayout() {
             </div>
           )}
           {userData?.role === "admin" && (
-            <div 
-              className={`nav-item ${window.location.pathname === "/admin" ? "active" : ""}`} 
+            <div
+              className={`nav-item ${
+                window.location.pathname === "/admin" ? "active" : ""
+              }`}
               onClick={() => navigate("/admin")}
             >
               <FaShieldAlt className="nav-icon" />
               {navOpen && <span className="nav-label">Admin</span>}
             </div>
           )}
-          <div 
-            className={`nav-item ${window.location.pathname === "/settings" ? "active" : ""}`} 
+          <div
+            className={`nav-item ${
+              window.location.pathname === "/settings" ? "active" : ""
+            }`}
             onClick={() => navigate("/settings")}
           >
             <FaUser className="nav-icon" />
@@ -133,6 +152,18 @@ function SharedLayout() {
       <div className={`main-content ${navOpen ? "nav-open" : "nav-closed"}`}>
         <Outlet />
       </div>
+
+      {/* ChatBot Toggle Button */}
+      <div className="chatbot-toggle" onClick={toggleChat}>
+        <span>💬</span>
+      </div>
+
+      {/* ChatBot Popup */}
+      {isChatOpen && (
+        <div className="chatbot-popup">
+          <ChatBot />
+        </div>
+      )}
     </div>
   );
 }
