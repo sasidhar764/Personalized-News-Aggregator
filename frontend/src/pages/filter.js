@@ -36,7 +36,8 @@ const NewsFilter = ({ onApplyFilter, onClearFilter, currentPreferences }) => {
     { code: "de", name: "German" },
     { code: "es", name: "Spanish" },
     { code: "it", name: "Italian" },
-    { code: "pt", name: "Portuguese" }
+    { code: "pt", name: "Portuguese" },
+    { code: "hi", name: "Hindi" }
   ];
   
   // Set initial values based on current preferences
@@ -183,7 +184,7 @@ const NewsFilter = ({ onApplyFilter, onClearFilter, currentPreferences }) => {
             <h4>Date Range</h4>
             <div className="date-pickers">
               <div className="date-picker-container">
-                <label>From:</label>
+                
                 <div className="date-input-wrapper">
                   <FaCalendarAlt className="calendar-icon" />
                   <DatePicker
@@ -201,7 +202,7 @@ const NewsFilter = ({ onApplyFilter, onClearFilter, currentPreferences }) => {
               </div>
               
               <div className="date-picker-container">
-                <label>To:</label>
+                
                 <div className="date-input-wrapper">
                   <FaCalendarAlt className="calendar-icon" />
                   <DatePicker

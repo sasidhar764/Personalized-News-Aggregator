@@ -1,7 +1,7 @@
 /* personalize.css */
 :root {
   --primary-color: #1a2b49;    /* Deep navy blue */
-  --secondary-color: #1aa57a;  /* Teal (replacing yellow) */
+  --secondary-color: linear-gradient(45deg, #1aa57a, #26c6da);  /* Teal (replacing yellow) */
   --accent-color: #e63946;     /* Vibrant red */
   --background-color: #f8f9fa; /* Light gray */
   --text-color: #333333;       /* Dark gray */
