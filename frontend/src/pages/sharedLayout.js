@@ -53,7 +53,7 @@ function SharedLayout() {
       {/* Side Navigation Bar */}
       <div className={`side-nav ${navOpen ? "open" : "closed"}`}>
         <div className="nav-header">
-          {navOpen && <h2 className="nav-logo">NewsApp</h2>}
+          {navOpen && <h2 className="nav-logo">NEWSPHERE</h2>}
           <button className="nav-toggle" onClick={toggleNav}>
             <FaBars />
           </button>
