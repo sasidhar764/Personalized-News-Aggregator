@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Outlet } from "react-router-dom";
-import "./dashboard.css";
+import "./sharedlayout.css";
 import {
   FaHome,
   FaUser,

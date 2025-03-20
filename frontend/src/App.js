@@ -10,7 +10,7 @@ import FlaggedArticles from "./pages/flaggedarticles";
 import PersonalizedNews from "./pages/personalize";
 import Bookmarks from "./pages/bookmark";
 import Settings from "./pages/settings";
-import SharedLayout from "./pages/sharedLayout"; // Add this import (create the file in your project root)
+import SharedLayout from "./pages/sharedlayout"; // Add this import (create the file in your project root)
 import ProtectedRoute from "./protectedroute";
 
 function App() {
