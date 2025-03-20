@@ -8,6 +8,7 @@ const { scheduleNewsSummaries } = require("./schedulers/summarizer.scheduler");
 const app = express();
 const PORT = process.env.PORT || 5000;
 const HOST = process.env.HOST || "localhost";
+const mongoURI = process.env.MONGO_URI;
 
 const authRoutes = require("./routes/auth.route");
 const newsRoutes = require("./routes/news.route");
@@ -21,7 +22,7 @@ app.use("/api/news", newsRoutes);
 
 mongoose
   .connect(
-    "mongodb+srv://user:Yjf0CelLvYQOF50K@backenddb.lxmhq.mongodb.net/nodedb?retryWrites=true&w=majority&appName=BackendDB"
+    mongoURI
   )
   .then(() => {
     const server = app.listen(PORT, () => {
@@ -49,5 +50,3 @@ mongoose
     console.error("Failed to connect to MongoDB:", err);
     process.exit(1);
   });
-
-model.exports = app;
