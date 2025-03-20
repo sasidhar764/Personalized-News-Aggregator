@@ -1,220 +1,232 @@
-/* Filter Component Styles */
+/* Filter Container */
 .news-filter {
-    position: relative;
-    margin-left: 10px;
-  }
-  
-  .filter-toggle-btn {
-    background-color: #f0f2f5;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    padding: 8px 12px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-  
-  .filter-toggle-btn:hover {
-    background-color: #e4e6e9;
-  }
-  
+  position: relative;
+}
+
+/* Filter Toggle Button */
+.filter-toggle-btn {
+  padding: 16px 24px;
+  background: linear-gradient(45deg, #1aa57a, #26c6da);
+  color: white;
+  border: none;
+  border-radius: 40px;
+  font-size: 1.2rem;
+  font-family: 'Arial', sans-serif;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: background 0.3s ease;
+}
+
+.filter-toggle-btn:hover {
+  background: linear-gradient(45deg, #168d65, #20b2c1);
+}
+
+/* Filter Panel */
+.filter-panel {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  border-radius: 12px;
+  padding: 25px;
+  width: 500px;
+  max-height: 80vh;
+  overflow-y: auto;
+  z-index: 10;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  /* animation: slideIn 0.2s ease-out; */
+}
+
+/* Panel Header */
+.filter-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid #e0e0e0;
+  padding-bottom: 10px;
+  margin-bottom: 15px;
+}
+
+.filter-panel-header h3 {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #333;
+}
+
+.close-filter-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.4rem;
+  color: #666;
+}
+
+.close-filter-btn:hover {
+  color: #1aa57a;
+}
+
+/* Filter Sections */
+.filter-section {
+  margin-bottom: 20px;
+}
+
+.filter-section h4 {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #444;
+  margin-bottom: 8px;
+}
+
+/* Category Options */
+.category-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.category-checkbox {
+  display: flex;
+  align-items: center;
+  background: #f8f8f8;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.category-checkbox:hover {
+  background: #eaeaea;
+}
+
+.category-checkbox input {
+  margin-right: 8px;
+}
+
+/* Select Dropdowns */
+.filter-select {
+  width: 100%;
+  padding: 10px;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+}
+
+.filter-select:focus {
+  border-color: #1aa57a;
+  outline: none;
+}
+
+/* Date Picker */
+.date-pickers {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.date-picker-container {
+  flex: 1;
+}
+
+.date-input-wrapper {
+  display: flex;
+  align-items: center;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 8px;
+  background: #f8f8f8;
+}
+
+.date-input {
+  border: none;
+  background: transparent;
+  width: 100%;
+  font-size: 1rem;
+  padding-left: 5px;
+}
+
+.date-input:focus {
+  outline: none;
+}
+
+.calendar-icon {
+  color: #666;
+}
+
+/* Filter Buttons */
+.filter-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.apply-filter-btn,
+.clear-filter-btn {
+  padding: 12px 20px;
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+/* Apply Filter Button */
+.apply-filter-btn {
+  background: linear-gradient(45deg, #1aa57a, #26c6da);
+  color: white;
+  border: none;
+}
+
+.apply-filter-btn:hover {
+  background: linear-gradient(45deg, #168d65, #20b2c1);
+}
+
+/* Clear Filter Button */
+.clear-filter-btn {
+  background: linear-gradient(45deg, #e74c3c, #ff6f61);
+  border: none;
+  color: white;
+}
+
+.clear-filter-btn:hover {
+  background: linear-gradient(45deg, #c0392b, #ff5243);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
   .filter-panel {
-    position: absolute;
-    top: 100%;
-    right: 0;
-    width: 320px;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    z-index: 100;
-    margin-top: 8px;
-    padding: 16px;
-    border: 1px solid #eaeaea;
+    position: fixed;
+    top: 15%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-height: 75vh;
+    border-radius: 10px;
+    z-index: 1000;
   }
-  
-  .filter-panel-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #eaeaea;
+}
+
+@media (max-width: 480px) {
+  .filter-panel {
+    top: 10%;
+    width: 95%;
+    padding: 20px;
   }
-  
+
   .filter-panel-header h3 {
-    margin: 0;
-    font-size: 18px;
-    font-weight: 600;
+    font-size: 1.3rem;
   }
-  
-  .close-filter-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 16px;
-    color: #666;
-  }
-  
-  .filter-section {
-    margin-bottom: 20px;
-  }
-  
+
   .filter-section h4 {
-    margin: 0 0 8px 0;
-    font-size: 14px;
-    font-weight: 600;
-    color: #333;
+    font-size: 1rem;
   }
-  
-  .category-options {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-  
+
   .category-checkbox {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 14px;
-    cursor: pointer;
-    padding: 4px 8px;
-    background-color: #f8f9fa;
-    border-radius: 4px;
-    transition: background-color 0.2s;
+    font-size: 0.9rem;
   }
-  
-  .category-checkbox:hover {
-    background-color: #eaeaea;
-  }
-  
-  .filter-select {
-    width: 100%;
-    padding: 8px;
-    border-radius: 4px;
-    border: 1px solid #ddd;
-    font-size: 14px;
-    background-color: #fff;
-  }
-  
-  .date-pickers {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  
-  .date-picker-container {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-  
-  .date-picker-container label {
-    font-size: 13px;
-    color: #666;
-  }
-  
-  .date-input-wrapper {
-    position: relative;
-    display: flex;
-    align-items: center;
-  }
-  
-  .calendar-icon {
-    position: absolute;
-    left: 10px;
-    color: #888;
-    z-index: 1;
-  }
-  
-  .date-input {
-    width: 100%;
-    padding: 8px 8px 8px 30px;
-    border-radius: 4px;
-    border: 1px solid #ddd;
-    font-size: 14px;
-  }
-  
-  .filter-buttons {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 16px;
-  }
-  
-  .apply-filter-btn, 
-  .clear-filter-btn {
-    padding: 8px 16px;
-    border-radius: 4px;
-    font-size: 14px;
-    cursor: pointer;
-    border: none;
-    transition: all 0.2s;
-  }
-  
-  .apply-filter-btn {
-    background-color: #3b82f6;
-    color: white;
-  }
-  
-  .apply-filter-btn:hover {
-    background-color: #2563eb;
-  }
-  
-  .clear-filter-btn {
-    background-color: #f3f4f6;
-    color: #4b5563;
-  }
-  
-  .clear-filter-btn:hover {
-    background-color: #e5e7eb;
-  }
-  
-  /* Active filters styling */
-  .active-filters {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 10px;
-    align-items: center;
-  }
-  
-  .filter-tag-label {
-    font-size: 14px;
-    font-weight: 600;
-    color: #666;
-  }
-  
-  .filter-tag {
-    display: inline-block;
-    padding: 4px 8px;
-    background-color: #e0f2fe;
-    color: #0369a1;
-    border-radius: 4px;
-    font-size: 13px;
-    font-weight: 500;
-  }
-  
-  /* Responsive adjustments */
-  @media (max-width: 768px) {
-    .filter-panel {
-      width: calc(100vw - 32px);
-      right: -10px;
-    }
-    
-    .search-and-filter-container {
-      flex-direction: column;
-      align-items: stretch;
-    }
-    
-    .news-filter {
-      margin-left: 0;
-      margin-top: 10px;
-    }
-    
-    .filter-toggle-btn {
-      width: 100%;
-      justify-content: center;
-    }
-  }
+}
