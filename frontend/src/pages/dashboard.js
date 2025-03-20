@@ -119,7 +119,11 @@ function Dashboard() {
 
   const handleSearch = async (e) => {
     e.preventDefault();
-    if (!searchQuery.trim()) return;
+    if (!searchQuery.trim()) {
+      // If search is empty, reset to headlines
+      clearSearch();
+      return;
+    }
     setIsSearching(true);
     fetchFilteredAndSearchedNews(searchQuery, isFiltering && activeFilters ? activeFilters : null);
   };
@@ -127,8 +131,26 @@ function Dashboard() {
   const clearSearch = async () => {
     setSearchQuery("");
     setIsSearching(false);
-    if (isFiltering && activeFilters) fetchFilteredAndSearchedNews(null, activeFilters);
-    else fetchHeadlines();
+    if (isFiltering && activeFilters) {
+      fetchFilteredAndSearchedNews(null, activeFilters);
+    } else {
+      fetchHeadlines();
+    }
+  };
+
+  const handleSearchInputChange = (e) => {
+    const newValue = e.target.value;
+    setSearchQuery(newValue);
+    
+    // If search field is cleared completely, reset to headlines
+    if (newValue === "") {
+      setIsSearching(false);
+      if (isFiltering && activeFilters) {
+        fetchFilteredAndSearchedNews(null, activeFilters);
+      } else {
+        fetchHeadlines();
+      }
+    }
   };
 
   const handleApplyFilter = async (filters) => {
@@ -140,8 +162,11 @@ function Dashboard() {
   const handleClearFilters = async () => {
     setIsFiltering(false);
     setActiveFilters(null);
-    if (searchQuery.trim()) fetchFilteredAndSearchedNews(searchQuery, null);
-    else fetchHeadlines();
+    if (searchQuery.trim()) {
+      fetchFilteredAndSearchedNews(searchQuery, null);
+    } else {
+      fetchHeadlines();
+    }
   };
 
   // Pagination Logic
@@ -239,7 +264,7 @@ function Dashboard() {
               <input
                 type="text"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={handleSearchInputChange}
                 placeholder="Explore the headlines..."
                 className="search-input-dashboard"
               />
@@ -274,7 +299,7 @@ function Dashboard() {
             ? "Search Results"
             : isFiltering
             ? "Filtered News"
-            : "Today’s Headlines"}
+            : "Today's Headlines"}
         </h2>
         <div className="news-list-dashboard">
           {currentCards.length > 0 ? (
