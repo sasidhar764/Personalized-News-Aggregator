@@ -2,29 +2,34 @@ const User = require('../models/user.model');
 const { Quiz, UserQuizStatus } = require('../models/quiz.model');
 
 const fetchQuiz = async (req, res) => {
-  console.log("Received username:", req.body.username); 
-
   try {
     const { username } = req.body;
     if (!username) return res.status(400).json({ message: "Username required" });
 
     const user = await User.findOne({ username });
     if (!user) return res.status(404).json({ message: "User not found" });
-    console.log("Received user:", user); 
-    const category = user.preferredCategory[0]; 
+
+    const categories = user.preferredCategory;
     const language = user.language;
 
-    const questions = await Quiz.find({
-      category,language
-    }).limit(5);
-    console.log("Fetched questions:", questions);
+    if (!categories || categories.length === 0) {
+      return res.status(400).json({ message: "No preferred categories found for user" });
+    }
+
+    let questions = [];
+    // Fetch up to 5 questions per category
+    for (const category of categories) {
+      const categoryQuestions = await Quiz.find({ category, language }).limit(5);
+      questions = questions.concat(categoryQuestions);
+    }
 
     return res.json({ questions });
+
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: "Error fetching quiz" });
   }
-}
+};
 
 const submitQuiz = async (req, res) => {
   try {
@@ -45,22 +50,28 @@ const submitQuiz = async (req, res) => {
       });
     }
 
-    const category = user.preferredCategory[0];
+    const categories = user.preferredCategory;
     const language = user.language;
 
-    const questions = await Quiz.find({ category, language }).limit(5);
+    let questions = [];
+    // Fetch up to 5 questions per category
+    for (const category of categories) {
+      const categoryQuestions = await Quiz.find({ category, language }).limit(5);
+      questions = questions.concat(categoryQuestions);
+    }
+
     if (questions.length === 0) return res.status(404).json({ message: "No quiz questions found" });
 
     let correctCount = 0;
     let results = [];
 
     questions.forEach((q, index) => {
-      const isCorrect = answers[index] === q.correctAnswer; 
+      const isCorrect = answers[index] === q.answer; 
       if (isCorrect) correctCount++;
       results.push({
         question: q.question,
         selected: answers[index],
-        correctAnswer: q.correctAnswer,
+        correctAnswer: q.answer,
         isCorrect
       });
     });
@@ -72,10 +83,7 @@ const submitQuiz = async (req, res) => {
       total: questions.length
     });
 
-    await newQuizStatus.save(); // Save the document
-    console.log("Quiz status saved:", newQuizStatus); // Debugging line
-
-    console.log(correctCount, questions.length, results);
+    await newQuizStatus.save();
 
     return res.json({
       message: "Quiz submitted",
