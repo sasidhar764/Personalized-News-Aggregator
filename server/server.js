@@ -12,6 +12,7 @@ const mongoURI = process.env.MONGO_URI;
 
 const authRoutes = require("./routes/auth.route");
 const newsRoutes = require("./routes/news.route");
+const quizRoutes = require("./routes/quiz.route");
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -19,6 +20,7 @@ app.use(cors());
 
 app.use("/api/auth", authRoutes);
 app.use("/api/news", newsRoutes);
+app.use("/api/quiz", quizRoutes);
 
 mongoose
   .connect(

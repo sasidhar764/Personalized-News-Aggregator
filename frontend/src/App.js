@@ -12,6 +12,8 @@ import Bookmarks from "./pages/bookmark";
 import Settings from "./pages/settings";
 import SharedLayout from "./pages/sharedlayout"; // Add this import (create the file in your project root)
 import ProtectedRoute from "./protectedroute";
+import QuizPage from "./pages/QuizPage";
+import ResultPage from "./pages/ResultPage";
 
 function App() {
   console.log("App component rendered");
@@ -35,6 +37,8 @@ function App() {
           <Route path="/settings" element={<Settings />} />
           <Route path="/flagged-articles" element={<FlaggedArticles />} />
           <Route path="/admin" element={<ProtectedRoute element={<AdminPage />} requiredRole="admin" />} />
+          <Route path="/quiz" element={<QuizPage />} />
+          <Route path="/result" element={<ResultPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

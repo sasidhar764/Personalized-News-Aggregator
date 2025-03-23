@@ -10,15 +10,16 @@ import {
   FaFlag,
   FaBookmark,
   FaStar,
+  FaQuestionCircle, // Added FaQuestionCircle for Quiz icon
 } from "react-icons/fa";
-import ChatBot from "./chatbot"; // Import the ChatBot component
+import ChatBot from "./chatbot";
 
 function SharedLayout() {
   const navigate = useNavigate();
   const [userData, setUserData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [navOpen, setNavOpen] = useState(true);
-  const [isChatOpen, setIsChatOpen] = useState(false); // State to toggle chatbot
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -106,6 +107,15 @@ function SharedLayout() {
           >
             <FaBookmark className="nav-icon" />
             {navOpen && <span className="nav-label">Bookmarks</span>}
+          </div>
+          <div
+            className={`nav-item ${
+              window.location.pathname === "/quiz" ? "active" : ""
+            }`}
+            onClick={() => navigate("/quiz")}
+          >
+            <FaQuestionCircle className="nav-icon" />
+            {navOpen && <span className="nav-label">Quiz</span>}
           </div>
           {userData?.role === "admin" && (
             <div
