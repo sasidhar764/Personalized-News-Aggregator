@@ -136,7 +136,7 @@ function SharedLayout() {
               onClick={() => navigate("/admin")}
             >
               <FaShieldAlt className="nav-icon" />
-              {navOpen && <span className="nav-label">Admin</span>}
+              {navOpen && <span className="nav-label">User Management</span>}
             </div>
           )}
           <div
