@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import NewsFilter from "./filter";
 import "./dashboard.css";
 import "./filter.css";
@@ -14,6 +15,7 @@ function Dashboard() {
   const [activeFilters, setActiveFilters] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const cardsPerPage = 9;
+  const navigate = useNavigate();
 
   const handleReadMore = async (url) => {
     try {
@@ -43,6 +45,12 @@ function Dashboard() {
   };
 
   useEffect(() => {
+    const authToken = localStorage.getItem("authToken");
+    if (!authToken) {
+      navigate('/');
+      return;
+    }
+
     const fetchUserData = async () => {
       try {
         const storedUser = localStorage.getItem("user");
@@ -56,7 +64,7 @@ function Dashboard() {
 
     fetchUserData();
     fetchHeadlines();
-  }, []);
+  }, [navigate]);
 
   const handleBookmark = async (article) => {
     if (!userData) return console.error("User data is not available");
@@ -120,7 +128,6 @@ function Dashboard() {
   const handleSearch = async (e) => {
     e.preventDefault();
     if (!searchQuery.trim()) {
-      // If search is empty, reset to headlines
       clearSearch();
       return;
     }
@@ -142,10 +149,9 @@ function Dashboard() {
     const newValue = e.target.value;
     setSearchQuery(newValue);
     
-    // If search field is cleared completely, reset to headlines
     if (newValue === "") {
       setIsSearching(false);
-      if (isFiltering && activeFilters) {
+      if (isFiltering && activeFilters - newValue.length > 0 ? "No stories found for your search." : "No headlines available right now." && activeFilters) {
         fetchFilteredAndSearchedNews(null, activeFilters);
       } else {
         fetchHeadlines();
@@ -169,7 +175,6 @@ function Dashboard() {
     }
   };
 
-  // Pagination Logic
   const indexOfLastCard = currentPage * cardsPerPage;
   const indexOfFirstCard = indexOfLastCard - cardsPerPage;
   const currentCards = news.slice(indexOfFirstCard, indexOfLastCard);
@@ -182,10 +187,9 @@ function Dashboard() {
     }
   };
 
-  // Generate Pagination with Ellipsis
   const getPaginationItems = () => {
     const items = [];
-    const maxPagesToShow = 5; // Show up to 5 pages + ellipsis
+    const maxPagesToShow = 5;
 
     if (totalPages <= maxPagesToShow + 2) {
       for (let i = 1; i <= totalPages; i++) {
@@ -200,7 +204,6 @@ function Dashboard() {
         );
       }
     } else {
-      // Always show first page
       items.push(
         <button
           key={1}
@@ -211,7 +214,6 @@ function Dashboard() {
         </button>
       );
 
-      // Show ellipsis and middle pages
       if (currentPage > 3) {
         items.push(<span key="start-ellipsis" className="pagination-ellipsis">...</span>);
       }
@@ -235,7 +237,6 @@ function Dashboard() {
         items.push(<span key="end-ellipsis" className="pagination-ellipsis">...</span>);
       }
 
-      // Always show last page
       items.push(
         <button
           key={totalPages}
@@ -351,7 +352,6 @@ function Dashboard() {
           )}
         </div>
 
-        {/* Pagination */}
         {news.length > cardsPerPage && (
           <div className="pagination-dashboard">
             <button
