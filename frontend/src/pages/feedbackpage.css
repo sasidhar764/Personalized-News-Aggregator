@@ -1,0 +1,350 @@
+/* Reset and Base Styles */
+.feedback-wrapper_fbp * {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Define shades of black and white */
+:root {
+  --white: #ffffff; /* Pure white */
+  --off-white: #f5f5f5; /* Slightly off-white for subtle contrast */
+  --black: #000000; /* Pure black */
+  --black-dark: #1a1a1a; /* Very dark black */
+  --black-medium: #333333; /* Medium dark black */
+  --black-light: #4d4d4d; /* Lighter black */
+  --black-lighter: #666666; /* Even lighter black */
+  --black-lightest: #999999; /* Lightest black shade */
+  --shadow: 0 6px 12px rgba(0, 0, 0, 0.1); /* Softer shadow */
+  --font-primary: "Merriweather", serif;
+  --font-secondary: "Lora", serif;
+  --success-green: #28a745; /* Green for success icon */
+}
+
+.feedback-wrapper_fbp {
+  min-height: 100vh;
+  background: var(--white); /* Pure white background */
+  padding: 2.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  font-family: var(--font-secondary);
+  color: var(--black); /* Pure black for text */
+}
+
+.feedback-container_fbp {
+  width: 90%; /* Spans 90% of the available width */
+  max-width: 1200px; /* Maximum width for larger screens */
+  background: var(--white); /* White background for container */
+  border-radius: 16px;
+  box-shadow: var(--shadow); /* Softer shadow for depth */
+  overflow: hidden;
+}
+
+.feedback-header_fbp {
+  padding: 2rem 3rem;
+  background: var(--black-dark); /* Very dark black for header */
+  color: var(--white); /* White text for header */
+}
+
+.feedback-header_fbp h2 {
+  font-family: var(--font-primary);
+  font-size: 1.75rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.feedback-form_fbp {
+  padding: 3rem;
+}
+
+.form-section_fbp {
+  margin-bottom: 3rem;
+  background: var(--off-white); /* Slightly off-white for form section */
+  padding: 2rem;
+  border-radius: 12px;
+}
+
+.form-section_fbp h3 {
+  color: var(--black); /* Pure black for headings */
+  font-family: var(--font-primary);
+  font-size: 1.35rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid var(--black-lighter); /* Lighter black for border */
+}
+
+.form-group_fbp {
+  margin-bottom: 1.5rem;
+  position: relative; /* For positioning the custom arrow */
+}
+
+.form-group_fbp label {
+  display: block;
+  color: var(--black-medium); /* Medium dark black for labels */
+  font-family: var(--font-secondary);
+  font-weight: 500;
+  margin-bottom: 0.75rem;
+  font-size: 0.95rem;
+}
+
+.form-group_fbp input,
+.form-group_fbp select,
+.form-group_fbp textarea {
+  width: 100%;
+  padding: 0.875rem 1.25rem;
+  border: 1px solid var(--black-lightest); /* Lightest black for borders */
+  border-radius: 8px;
+  font-size: 1rem;
+  color: var(--black); /* Pure black for text */
+  background: var(--white); /* White background for inputs */
+  transition: all 0.2s ease;
+  font-family: var(--font-secondary);
+}
+
+/* Custom styling for the select dropdown */
+.form-group_fbp select {
+  appearance: none; /* Remove default browser styling */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding-right: 2.5rem; /* Space for the custom arrow */
+  cursor: pointer;
+}
+
+/* Custom down arrow for the select dropdown */
+.form-group_fbp select + .custom-arrow_fbp::after {
+  content: "▼"; /* Unicode down arrow symbol */
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.8rem;
+  color: var(--black-medium); /* Medium dark black for the arrow */
+  pointer-events: none; /* Prevent the arrow from interfering with clicks */
+}
+
+/* Add a wrapper for the custom arrow */
+.form-group_fbp .custom-arrow_fbp {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Style for read-only username field */
+.form-group_fbp input[readonly] {
+  background: var(--off-white); /* Slightly off-white to indicate non-editable */
+  color: var(--black-light); /* Lighter black for text */
+  cursor: not-allowed;
+}
+
+.form-group_fbp textarea {
+  resize: vertical;
+}
+
+.form-group_fbp input:focus,
+.form-group_fbp select:focus,
+.form-group_fbp textarea:focus {
+  outline: none;
+  border-color: var(--black-medium); /* Medium dark black for focus border */
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1); /* Subtle shadow for focus */
+}
+
+/* Hover effect for the select dropdown */
+.form-group_fbp select:hover {
+  border-color: var(--black-lighter); /* Slightly darker border on hover */
+}
+
+/* Style for the placeholder option in the select */
+.form-group_fbp select option[disabled] {
+  color: var(--black-lightest); /* Lightest black for placeholder */
+}
+
+.form-actions_fbp {
+  margin-top: 2.5rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--black-lightest); /* Lightest black for border */
+}
+
+.alert_fbp {
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-family: var(--font-secondary);
+}
+
+.alert-error_fbp {
+  background: var(--off-white); /* Slightly off-white for error background */
+  color: var(--black-medium); /* Medium dark black for error text */
+  border-left: 4px solid var(--black-dark); /* Very dark black for error border */
+}
+
+.button-group_fbp {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+
+.submit-button_fbp {
+  padding: 0.875rem 2rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: var(--black-dark); /* Very dark black for button */
+  color: var(--white); /* White text for button */
+  font-family: var(--font-secondary);
+}
+
+.submit-button_fbp:hover:not(:disabled) {
+  background: var(--black); /* Pure black on hover */
+  transform: translateY(-2px);
+}
+
+.submit-button_fbp:disabled {
+  background: var(--black-light); /* Lighter black for disabled */
+  color: var(--black-lighter); /* Lighter black for disabled text */
+  cursor: not-allowed;
+}
+
+/* Custom Modal Styling */
+.modal-backdrop_fbp {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5); /* Semi-transparent black backdrop */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.modal_fbp {
+  background: var(--white); /* White background for modal */
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2); /* Deeper shadow for depth */
+  width: 90%;
+  max-width: 350px; /* Reduced width for compactness */
+  overflow: hidden;
+  animation: slideIn 0.3s ease-in-out;
+}
+
+.modal-body_fbp {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem; /* Space between icon and text */
+  color: var(--black); /* Pure black for text */
+  font-family: var(--font-secondary);
+  font-size: 1rem;
+  text-align: center;
+}
+
+.modal-icon_fbp {
+  font-size: 2.5rem; /* Size for FaCheckCircle */
+  color: var(--success-green); /* Green for success icon */
+  background: var(--off-white); /* Slightly off-white background for icon */
+  width: 60px;
+  height: 60px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%; /* Circular icon */
+  border: 2px solid var(--success-green); /* Green border for icon */
+}
+
+.modal-body_fbp p {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.modal-footer_fbp {
+  padding: 1rem;
+  display: flex;
+  justify-content: center; /* Center the OK button */
+  border-top: 1px solid var(--black-lightest);
+}
+
+.modal-ok-btn_fbp {
+  padding: 0.75rem 2rem; /* Wider button for better balance */
+  background: var(--black-dark); /* Very dark black for button */
+  color: var(--white); /* White text for button */
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--font-secondary);
+}
+
+.modal-ok-btn_fbp:hover {
+  background: var(--black); /* Pure black on hover */
+  transform: translateY(-2px);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .feedback-wrapper_fbp {
+    padding: 1.5rem;
+  }
+
+  .feedback-form_fbp {
+    padding: 2rem;
+  }
+
+  .form-section_fbp {
+    padding: 1.5rem;
+  }
+
+  .button-group_fbp {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .submit-button_fbp {
+    width: 100%;
+  }
+
+  .modal_fbp {
+    width: 95%;
+    max-width: 300px; /* Slightly smaller for mobile */
+  }
+}

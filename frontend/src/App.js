@@ -10,10 +10,11 @@ import FlaggedArticles from "./pages/flaggedarticles";
 import PersonalizedNews from "./pages/personalize";
 import Bookmarks from "./pages/bookmark";
 import Settings from "./pages/settings";
-import SharedLayout from "./pages/sharedlayout"; // Add this import (create the file in your project root)
+import SharedLayout from "./pages/sharedlayout";
 import ProtectedRoute from "./protectedroute";
 import QuizPage from "./pages/QuizPage";
 import ResultPage from "./pages/ResultPage";
+import FeedbackPage from "./pages/feedbackpage";
 
 function App() {
   console.log("App component rendered");
@@ -39,6 +40,7 @@ function App() {
           <Route path="/admin" element={<ProtectedRoute element={<AdminPage />} requiredRole="admin" />} />
           <Route path="/quiz" element={<QuizPage />} />
           <Route path="/result" element={<ResultPage />} />
+          <Route path="/feedback" element={<FeedbackPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

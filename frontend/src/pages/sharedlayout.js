@@ -10,7 +10,8 @@ import {
   FaFlag,
   FaBookmark,
   FaStar,
-  FaQuestionCircle, // Added FaQuestionCircle for Quiz icon
+  FaQuestionCircle,
+  FaComment,
 } from "react-icons/fa";
 import ChatBot from "./chatbot";
 
@@ -116,6 +117,15 @@ function SharedLayout() {
           >
             <FaQuestionCircle className="nav-icon" />
             {navOpen && <span className="nav-label">Quiz</span>}
+          </div>
+          <div
+            className={`nav-item ${
+              window.location.pathname === "/feedback" ? "active" : ""
+            }`}
+            onClick={() => navigate("/feedback")}
+          >
+            <FaComment className="nav-icon" />
+            {navOpen && <span className="nav-label">Feedback</span>}
           </div>
           {userData?.role === "admin" && (
             <div
