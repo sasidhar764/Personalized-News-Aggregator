@@ -11,7 +11,9 @@ const {
     deleteArticle, 
     getFlaggedArticles, 
     removeFlags,
-    toggleNewsSummary
+    toggleNewsSummary,
+    analyzeNewsComments,
+    deleteComment
 } = require("../controllers/news.controller");
 const { llmcontroller } = require("../controllers/llm.controller");
 
@@ -26,6 +28,8 @@ router.delete("/deletearticle", deleteArticle);
 router.get("/flaggedarticles", getFlaggedArticles);
 router.post("/removeflags", removeFlags);
 router.post("/togglesummary", toggleNewsSummary);
+router.post("/analyzecomments", analyzeNewsComments);
+router.delete("/deletecomment", deleteComment);
 router.post('/chat', llmcontroller.getChatResponse);
 
 module.exports = router;

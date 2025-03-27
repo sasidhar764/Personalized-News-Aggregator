@@ -46,7 +46,12 @@ const userSchema = new mongoose.Schema(
         summary: {
             type: Boolean,
             default: false
-        }
+        },
+        comments: [{
+            url: { type: String, required: true },
+            comment: { type: String, required: true },
+            _id: false
+        }],
     },
     {
         timestamps: true

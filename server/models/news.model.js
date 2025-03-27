@@ -12,7 +12,12 @@ const NewsSchema = new mongoose.Schema({
     category: { type: String, default: "General" },
     language: { type: String, default: "" },
     country: { type: String, default: "" },
-    viewcount: { type: Number, default: 0 }
+    viewcount: { type: Number, default: 0 },
+    comments: [{
+        username: { type: String, required: true },
+        comment: { type: String, required: true },
+        _id: false
+    }],
 }, { timestamps: true });
 
 module.exports = mongoose.model("News", NewsSchema);

@@ -2,6 +2,7 @@ const News = require("../models/news.model");
 const Headlines = require("../models/headlines.model");
 const User = require("../models/user.model");
 const sendSummaryEmail = require("../utils/summarizer.utils");
+const { analyzeSentiment } = require("./sen_analysis.controller");
 
 const getNews = async (req, res) => {
     try {
@@ -253,6 +254,86 @@ const toggleNewsSummary = async (req, res) => {
     }
 };
 
+const analyzeNewsComments = async (req, res) => {
+    try {
+        const { username, url, comment } = req.body;
+        if (!username || !url || !comment) {
+            return res.status(400).json({ error: "Username, URL, and comment are required." });
+        }
+        const user = await User.findOne({ username });
+        if (!user) {
+            return res.status(404).json({ error: "User not found. Invalid username." });
+        }
+        const newsItem = await News.findOne({ url });
+        if (!newsItem) {
+            return res.status(404).json({ error: "News article not found." });
+        }
+        const sentiment = await analyzeSentiment(comment);
+        if (sentiment === "Negative") {
+            return res.status(403).json({
+                message: "Negative Comment",
+                sentiment: sentiment
+            });
+        }
+        const hasCommentedInNews = newsItem.comments.some(c => c.username === username);
+        if (hasCommentedInNews) {
+            return res.status(400).json({ error: "User has already commented on this article." });
+        }
+        newsItem.comments = newsItem.comments || [];
+        newsItem.comments.push({ username, comment });
+        user.comments = user.comments || [];
+        user.comments.push({ url, comment });
+        await Promise.all([newsItem.save(), user.save()]);
+        res.json({
+            message: "Comment added successfully",
+            sentiment: sentiment
+        });
+    } catch (error) {
+        console.error("Error analyzing comment:", error.message);
+        res.status(500).json({ error: "Failed to analyze comment." });
+    }
+};
+
+const deleteComment = async (req, res) => {
+    try {
+        const { username, url } = req.body;
+        if (!username || !url) {
+            return res.status(400).json({ error: "Username and URL are required." });
+        }
+
+        // Check if the user exists
+        const user = await User.findOne({ username });
+        if (!user) {
+            return res.status(404).json({ error: "User not found. Invalid username." });
+        }
+
+        // Check if the news article exists
+        const newsItem = await News.findOne({ url });
+        if (!newsItem) {
+            return res.status(404).json({ error: "News article not found." });
+        }
+
+        // Check if the user has a comment on this article
+        const commentExistsInNews = newsItem.comments.some(c => c.username === username);
+        if (!commentExistsInNews) {
+            return res.status(404).json({ error: "Comment not found for this user on this article." });
+        }
+
+        // Remove the comment from News
+        newsItem.comments = newsItem.comments.filter(c => c.username !== username);
+
+        // Remove the comment from User
+        user.comments = user.comments.filter(c => c.url !== url);
+
+        await Promise.all([newsItem.save(), user.save()]);
+
+        res.json({ message: "Comment deleted successfully." });
+    } catch (error) {
+        console.error("Error deleting comment:", error.message);
+        res.status(500).json({ error: "Failed to delete comment." });
+    }
+};
+
 module.exports = { 
     getNews, 
     getHeadlines, 
@@ -265,5 +346,7 @@ module.exports = {
     removeFlags,
     getBookmarks,
     sendNewsSummaries,
-    toggleNewsSummary
+    toggleNewsSummary,
+    analyzeNewsComments,
+    deleteComment
 };
