@@ -3,7 +3,19 @@ import { useNavigate } from "react-router-dom";
 import NewsFilter from "./filter";
 import "./dashboard.css";
 import "./filter.css";
-import { FaBookmark, FaFlag, FaSearch, FaTimes, FaAngleLeft, FaAngleRight } from "react-icons/fa";
+import { 
+  FaBookmark, 
+  FaFlag, 
+  FaSearch, 
+  FaTimes, 
+  FaAngleLeft, 
+  FaAngleRight,
+  FaShareAlt,
+  FaLinkedin,
+  FaWhatsapp,
+  FaTwitter,
+  FaEnvelope
+} from "react-icons/fa";
 
 function Dashboard() {
   const [userData, setUserData] = useState(null);
@@ -14,6 +26,7 @@ function Dashboard() {
   const [isFiltering, setIsFiltering] = useState(false);
   const [activeFilters, setActiveFilters] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [activeShareIndex, setActiveShareIndex] = useState(null);
   const cardsPerPage = 9;
   const navigate = useNavigate();
 
@@ -66,6 +79,21 @@ function Dashboard() {
     fetchHeadlines();
   }, [navigate]);
 
+  // Click outside handler to close share menu
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (activeShareIndex !== null && !event.target.closest('.share-menu-dashboard') && 
+          !event.target.closest('.share-btn-dashboard')) {
+        setActiveShareIndex(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [activeShareIndex]);
+
   const handleBookmark = async (article) => {
     if (!userData) return console.error("User data is not available");
     try {
@@ -101,6 +129,56 @@ function Dashboard() {
       console.error("Error flagging article", error);
       alert("Failed to flag article");
     }
+  };
+
+  const handleShareToggle = (index) => {
+    setActiveShareIndex(activeShareIndex === index ? null : index);
+  };
+
+  const handleShare = (article, platform) => {
+    const shareUrl = encodeURIComponent(article.url);
+    const shareTitle = encodeURIComponent(article.title);
+    let shareLink = '';
+
+    switch (platform) {
+      case 'linkedin':
+        shareLink = `https://www.linkedin.com/sharing/share-offsite/?url=${shareUrl}`;
+        break;
+      case 'whatsapp':
+        shareLink = `https://wa.me/?text=${shareTitle}%20${shareUrl}`;
+        break;
+      case 'twitter':
+        shareLink = `https://twitter.com/intent/tweet?url=${shareUrl}&text=${shareTitle}`;
+        break;
+      case 'email':
+        shareLink = `mailto:?subject=${shareTitle}&body=Check%20out%20this%20article:%20${shareUrl}`;
+        break;
+      default:
+        console.error('Invalid sharing platform');
+        return;
+    }
+
+    // Track share event
+    try {
+      fetch(`${process.env.REACT_APP_SERVER_URL}/news/trackshare`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+        },
+        body: JSON.stringify({ 
+          username: userData?.username, 
+          url: article.url,
+          platform: platform 
+        }),
+      });
+    } catch (error) {
+      console.error("Error logging share event", error);
+    }
+
+    // Open share link in new window
+    window.open(shareLink, '_blank');
+    setActiveShareIndex(null);
   };
 
   const fetchFilteredAndSearchedNews = async (searchTerm, filters) => {
@@ -151,7 +229,7 @@ function Dashboard() {
     
     if (newValue === "") {
       setIsSearching(false);
-      if (isFiltering && activeFilters - newValue.length > 0 ? "No stories found for your search." : "No headlines available right now." && activeFilters) {
+      if (isFiltering && activeFilters) {
         fetchFilteredAndSearchedNews(null, activeFilters);
       } else {
         fetchHeadlines();
@@ -336,6 +414,46 @@ function Dashboard() {
                   >
                     <FaFlag className="action-icon-dashboard" /> Flag
                   </button>
+                  <div className="share-container-dashboard">
+                    <button
+                      className="news-action-btn-dashboard share-btn-dashboard"
+                      onClick={() => handleShareToggle(index)}
+                    >
+                      <FaShareAlt className="action-icon-dashboard" /> Share
+                    </button>
+                    {activeShareIndex === index && (
+                      <div className="share-menu-dashboard">
+                        <button 
+                          className="share-option-dashboard" 
+                          onClick={() => handleShare(article, 'linkedin')}
+                          aria-label="Share on LinkedIn"
+                        >
+                          <FaLinkedin className="share-icon-dashboard linkedin" /> LinkedIn
+                        </button>
+                        <button 
+                          className="share-option-dashboard" 
+                          onClick={() => handleShare(article, 'whatsapp')}
+                          aria-label="Share on WhatsApp"
+                        >
+                          <FaWhatsapp className="share-icon-dashboard whatsapp" /> WhatsApp
+                        </button>
+                        <button 
+                          className="share-option-dashboard" 
+                          onClick={() => handleShare(article, 'twitter')}
+                          aria-label="Share on Twitter"
+                        >
+                          <FaTwitter className="share-icon-dashboard twitter" /> Twitter
+                        </button>
+                        <button 
+                          className="share-option-dashboard" 
+                          onClick={() => handleShare(article, 'email')}
+                          aria-label="Share via Email"
+                        >
+                          <FaEnvelope className="share-icon-dashboard email" /> Email
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </article>
             ))
