@@ -1,0 +1,272 @@
+/* Reset and Base Styles */
+.admin-feedback-wrapper_afp * {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Define the color palette */
+:root {
+  /* Primary Colors */
+  --primary-dark: #15181c; /* Dark grayish-black for backgrounds */
+  --primary-teal: #1aa57a; /* Teal for heading only */
+  --primary-red: #ff4d4d; /* Red for errors and logout hover */
+
+  /* Text Colors */
+  --text-white: #ffffff; /* Pure white for text on dark backgrounds */
+  --text-red: #ff4d4d; /* Red for error text */
+
+  /* Background Colors (with opacity) */
+  --red-transparent: rgba(255, 77, 77, 0.2); /* Red with 20% opacity for hover */
+  --white-transparent: rgba(255, 255, 255, 0.1); /* White with 10% opacity for borders */
+
+  /* Shadows */
+  --shadow-light: rgba(0, 0, 0, 0.1); /* Light black shadow */
+
+  /* Gradients */
+  --gradient-header: linear-gradient(90deg, #1aa57a, #1aa57a); /* Dark to teal gradient for heading */
+  --gradient-error: linear-gradient(90deg, #ff4d4d, rgba(255, 77, 77, 0.2)); /* Red gradient for error */
+  --gradient-success: linear-gradient(90deg, #4caf50, rgba(76, 175, 80, 0.2)); /* Green gradient for success (using --status-resolved) */
+
+  /* Status Colors and Gradients */
+  --status-pending: #ff9800; /* Orange for Pending */
+  --gradient-pending: linear-gradient(90deg, #ff990095, rgba(255, 153, 0, 0.5)); /* Orange gradient for Pending */
+  --status-reviewed: #2196f3; /* Blue for Reviewed */
+  --gradient-reviewed: linear-gradient(90deg, #2196f3, rgba(33, 149, 243, 0.5)); /* Blue gradient for Reviewed */
+  --status-resolved: #4caf50; /* Green for Resolved */
+  --gradient-resolved: linear-gradient(90deg, #4caf50, rgba(76, 175, 80, 0.5)); /* Green gradient for Resolved */
+  --status-dismissed: #f44336; /* Red for Dismissed */
+  --gradient-dismissed: linear-gradient(90deg, #f44336, rgba(244, 67, 54, 0.5)); /* Red gradient for Dismissed */
+
+  /* Fonts */
+  --font-primary: "Merriweather", serif;
+  --font-secondary: "Lora", serif;
+}
+
+.admin-feedback-wrapper_afp {
+  min-height: 100vh;
+  background: var(--text-white); /* Pure white background */
+  padding: 0; /* Remove padding to fill the entire page */
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-secondary);
+  color: var(--primary-dark); /* Dark grayish-black for text */
+}
+
+.admin-feedback-heading_afp {
+  font-family: var(--font-primary);
+  font-size: 2rem;
+  font-weight: 600;
+  padding: 1rem;
+  background: var(--gradient-header); /* Gradient from dark to teal (only for heading) */
+  color: var(--text-white); /* White text for contrast */
+}
+
+.admin-feedback-content_afp {
+  flex: 1; /* Take up all available space */
+  padding: 1rem; /* Minimal padding for content */
+}
+
+.feedback-group_afp {
+  margin-bottom: 1rem;
+}
+
+.status-heading_afp {
+  font-family: var(--font-primary);
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+/* Status-specific colors for headings */
+.status-heading_afp.pending {
+  color: var(--status-pending); /* Orange for Pending */
+}
+
+.status-heading_afp.reviewed {
+  color: var(--status-reviewed); /* Blue for Reviewed */
+}
+
+.status-heading_afp.resolved {
+  color: var(--status-resolved); /* Green for Resolved */
+}
+
+.status-heading_afp.dismissed {
+  color: var(--status-dismissed); /* Red for Dismissed */
+}
+
+.feedback-list_afp {
+  list-style: none;
+  padding: 0;
+}
+
+.feedback-item_afp {
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
+  border-radius: 4px;
+  transition: transform 0.2s ease-in-out, background 0.2s ease;
+}
+
+/* Status-specific styles for feedback items */
+.feedback-item_afp.pending {
+  background: var(--gradient-pending); /* Orange gradient for Pending */
+  border-left: 4px solid var(--status-pending); /* Orange border */
+}
+
+.feedback-item_afp.pending:hover {
+  background: var(--status-pending); /* Solid orange on hover */
+  color: var(--text-white); /* White text on hover */
+  transform: scale(1.01); /* Slight scale on hover */
+}
+
+.feedback-item_afp.reviewed {
+  background: var(--gradient-reviewed); /* Blue gradient for Reviewed */
+  border-left: 4px solid var(--status-reviewed); /* Blue border */
+}
+
+.feedback-item_afp.reviewed:hover {
+  background: var(--status-reviewed); /* Solid blue on hover */
+  color: var(--text-white); /* White text on hover */
+  transform: scale(1.01); /* Slight scale on hover */
+}
+
+.feedback-item_afp.resolved {
+  background: var(--gradient-resolved); /* Green gradient for Resolved */
+  border-left: 4px solid var(--status-resolved); /* Green border */
+}
+
+.feedback-item_afp.resolved:hover {
+  background: var(--status-resolved); /* Solid green on hover */
+  color: var(--text-white); /* White text on hover */
+  transform: scale(1.01); /* Slight scale on hover */
+}
+
+.feedback-item_afp.dismissed {
+  background: var(--gradient-dismissed); /* Red gradient for Dismissed */
+  border-left: 4px solid var(--status-dismissed); /* Red border */
+}
+
+.feedback-item_afp.dismissed:hover {
+  background: var(--status-dismissed); /* Solid red on hover */
+  color: var(--text-white); /* White text on hover */
+  transform: scale(1.01); /* Slight scale on hover */
+}
+
+.feedback-details_afp {
+  display: inline; /* Display all fields in one line */
+  font-size: 0.95rem;
+}
+
+.feedback-label_afp {
+  font-weight: 600;
+  color: var(--primary-dark); /* Dark grayish-black for labels */
+}
+
+.feedback-item_afp:hover .feedback-label_afp {
+  color: var(--text-white); /* White labels on hover */
+}
+
+.status-select_afp {
+  padding: 0.3rem;
+  border: 1px solid var(--white-transparent); /* Semi-transparent white border */
+  border-radius: 4px;
+  font-size: 0.9rem;
+  color: var(--text-white); /* White text for better contrast */
+  font-family: var(--font-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* Dynamic background color based on status */
+.status-pending_afp {
+  background: var(--status-pending); /* Orange for Pending */
+}
+
+.status-reviewed_afp {
+  background: var(--status-reviewed); /* Blue for Reviewed */
+}
+
+.status-resolved_afp {
+  background: var(--status-resolved); /* Green for Resolved */
+}
+
+.status-dismissed_afp {
+  background: var(--status-dismissed); /* Red for Dismissed */
+}
+
+.status-select_afp:focus {
+  outline: none;
+  border-color: var(--primary-dark); /* Dark border on focus */
+  box-shadow: 0 0 0 3px var(--white-transparent); /* White shadow on focus */
+}
+
+.status-select_afp:hover {
+  transform: scale(1.05); /* Slight scale on hover */
+  transition: transform 0.2s ease-in-out;
+}
+
+.alert_afp {
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-family: var(--font-secondary);
+}
+
+.alert-error_afp {
+  background: var(--gradient-error); /* Red gradient for error */
+  color: var(--text-white); /* White text for contrast */
+  border-left: 4px solid var(--primary-red); /* Solid red border */
+}
+
+.alert-success_afp {
+  background: var(--gradient-success); /* Green gradient for success */
+  color: var(--text-white); /* White text for contrast */
+  border-left: 4px solid var(--status-resolved); /* Solid green border */
+}
+
+.no-feedback_afp {
+  font-size: 1rem;
+  color: var(--primary-dark); /* Dark grayish-black for text */
+  font-family: var(--font-secondary);
+  padding: 0.5rem;
+}
+
+.loading_afp {
+  font-size: 1.2rem;
+  color: var(--primary-dark); /* Dark grayish-black for text */
+  font-family: var(--font-secondary);
+  padding: 1rem;
+  text-align: center;
+  flex: 1;
+}
+
+@media (max-width: 768px) {
+  .admin-feedback-heading_afp {
+    font-size: 1.5rem;
+    padding: 0.75rem;
+  }
+
+  .admin-feedback-content_afp {
+    padding: 0.5rem;
+  }
+
+  .status-heading_afp {
+    font-size: 1.3rem;
+  }
+
+  .feedback-item_afp {
+    padding: 0.5rem;
+  }
+
+  .feedback-details_afp {
+    font-size: 0.85rem;
+  }
+
+  .status-select_afp {
+    padding: 0.2rem;
+    font-size: 0.8rem;
+  }
+}

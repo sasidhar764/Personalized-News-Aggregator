@@ -1,22 +1,31 @@
 import { Navigate } from "react-router-dom";
-import { useAuth } from "./authcontext";
+import PropTypes from "prop-types";
 
 const ProtectedRoute = ({ element, requiredRole }) => {
-  const { user } = useAuth();
+  const user = localStorage.getItem("user");
+  const isAuthenticated = !!user;
 
-  console.log("User data in ProtectedRoute:", user);
-
-  if (user === null) {
-    console.log("User state is null, waiting for authentication...");
-    return null;
+  let hasRequiredRole = true;
+  if (requiredRole && isAuthenticated) {
+    try {
+      const userData = JSON.parse(user);
+      hasRequiredRole = userData.role === requiredRole;
+    } catch (error) {
+      console.error("Error parsing user data:", error);
+      hasRequiredRole = false;
+    }
   }
 
-  if (requiredRole && user.role.toLowerCase() !== requiredRole.toLowerCase()) {
-    console.log("Unauthorized. Redirecting to dashboard.");
-    return <Navigate to="/dashboard" />;
+  if (isAuthenticated && hasRequiredRole) {
+    return element;
   }
 
-  return element;
+  return <Navigate to="/" replace />;
+};
+
+ProtectedRoute.propTypes = {
+  element: PropTypes.element.isRequired,
+  requiredRole: PropTypes.string,
 };
 
 export default ProtectedRoute;

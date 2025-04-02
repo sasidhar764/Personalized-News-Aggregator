@@ -141,6 +141,16 @@ function SharedLayout() {
           {userData?.role === "admin" && (
             <div
               className={`nav-item ${
+                window.location.pathname === "/adminfeedback" ? "active" : ""
+              }`}
+              onClick={() => navigate("/adminfeedback")}
+            >
+              {navOpen && <span className="nav-label">Feedback Review</span>}
+            </div>
+          )}
+          {userData?.role === "admin" && (
+            <div
+              className={`nav-item ${
                 window.location.pathname === "/admin" ? "active" : ""
               }`}
               onClick={() => navigate("/admin")}
