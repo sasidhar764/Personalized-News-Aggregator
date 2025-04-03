@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import NewsFilter from "./filter";
 import "./dashboard.css";
@@ -26,9 +26,60 @@ function Dashboard() {
   const [isFiltering, setIsFiltering] = useState(false);
   const [activeFilters, setActiveFilters] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [activeShareIndex, setActiveShareIndex] = useState(null);
+  const [showShareOptions, setShowShareOptions] = useState({});
+  const shareButtonRefs = useRef({});
   const cardsPerPage = 9;
   const navigate = useNavigate();
+
+  // Fetch headlines initially
+  const fetchHeadlines = async () => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_SERVER_URL}/news/headlines`);
+      const data = await response.json();
+      setNews(data || []);
+      setCurrentPage(1);
+    } catch (error) {
+      console.error("Error fetching news:", error);
+    }
+  };
+
+  // Initial data fetch
+  useEffect(() => {
+    const authToken = localStorage.getItem("authToken");
+    if (!authToken) {
+      navigate('/');
+      return;
+    }
+
+    const fetchUserData = async () => {
+      try {
+        const storedUser = localStorage.getItem("user");
+        if (storedUser) setUserData(JSON.parse(storedUser));
+        await fetchHeadlines();
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, [navigate]);
+
+  // Handle click outside share options
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      const isClickInsideShareButton = Object.values(shareButtonRefs.current).some(
+        (ref) => ref && ref.contains(event.target)
+      );
+      if (!isClickInsideShareButton) {
+        setShowShareOptions({});
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handleReadMore = async (url) => {
     try {
@@ -42,60 +93,12 @@ function Dashboard() {
       });
       if (!response.ok) throw new Error("Failed to log read more event");
     } catch (error) {
-      console.error("Error logging read more event", error);
+      console.error("Error logging read more event:", error);
     }
   };
-
-  const fetchHeadlines = async () => {
-    try {
-      const response = await fetch(`${process.env.REACT_APP_SERVER_URL}/news/headlines`);
-      const data = await response.json();
-      setNews(data || []);
-      setCurrentPage(1);
-    } catch (error) {
-      console.error("Error fetching news", error);
-    }
-  };
-
-  useEffect(() => {
-    const authToken = localStorage.getItem("authToken");
-    if (!authToken) {
-      navigate('/');
-      return;
-    }
-
-    const fetchUserData = async () => {
-      try {
-        const storedUser = localStorage.getItem("user");
-        if (storedUser) setUserData(JSON.parse(storedUser));
-      } catch (error) {
-        console.error("Error fetching user data", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchUserData();
-    fetchHeadlines();
-  }, [navigate]);
-
-  // Click outside handler to close share menu
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (activeShareIndex !== null && !event.target.closest('.share-menu-dashboard') && 
-          !event.target.closest('.share-btn-dashboard')) {
-        setActiveShareIndex(null);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [activeShareIndex]);
 
   const handleBookmark = async (article) => {
-    if (!userData) return console.error("User data is not available");
+    if (!userData) return console.error("User data not available");
     try {
       await fetch(`${process.env.REACT_APP_SERVER_URL}/news/bookmark`, {
         method: "POST",
@@ -107,13 +110,13 @@ function Dashboard() {
       });
       alert("Article bookmarked successfully!");
     } catch (error) {
-      console.error("Error bookmarking article", error);
+      console.error("Error bookmarking article:", error);
       alert("Failed to bookmark article");
     }
   };
 
   const handleFlag = async (article) => {
-    if (!userData) return console.error("User data is not available");
+    if (!userData) return console.error("User data not available");
     try {
       await fetch(`${process.env.REACT_APP_SERVER_URL}/news/reportarticle`, {
         method: "POST",
@@ -126,65 +129,56 @@ function Dashboard() {
       setNews((prevNews) => prevNews.filter((item) => item.url !== article.url));
       alert("Article flagged for review and removed!");
     } catch (error) {
-      console.error("Error flagging article", error);
+      console.error("Error flagging article:", error);
       alert("Failed to flag article");
     }
   };
 
-  const handleShareToggle = (index) => {
-    setActiveShareIndex(activeShareIndex === index ? null : index);
+  const toggleShareOptions = (articleUrl) => {
+    setShowShareOptions((prev) => ({
+      ...Object.keys(prev).reduce((acc, key) => ({ ...acc, [key]: false }), {}),
+      [articleUrl]: !prev[articleUrl],
+    }));
   };
 
-  const handleShare = (article, platform) => {
-    const shareUrl = encodeURIComponent(article.url);
-    const shareTitle = encodeURIComponent(article.title);
-    let shareLink = '';
-
-    switch (platform) {
-      case 'linkedin':
-        shareLink = `https://www.linkedin.com/sharing/share-offsite/?url=${shareUrl}`;
-        break;
-      case 'whatsapp':
-        shareLink = `https://wa.me/?text=${shareTitle}%20${shareUrl}`;
-        break;
-      case 'twitter':
-        shareLink = `https://twitter.com/intent/tweet?url=${shareUrl}&text=${shareTitle}`;
-        break;
-      case 'email':
-        shareLink = `mailto:?subject=${shareTitle}&body=Check%20out%20this%20article:%20${shareUrl}`;
-        break;
-      default:
-        console.error('Invalid sharing platform');
-        return;
-    }
-
-    // Track share event
+  const handleShare = async (article, platform) => {
+    if (!userData) return alert("Please login to share articles");
     try {
-      fetch(`${process.env.REACT_APP_SERVER_URL}/news/trackshare`, {
+      await fetch(`${process.env.REACT_APP_SERVER_URL}/news/trackshare`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("authToken")}`,
         },
         body: JSON.stringify({ 
-          username: userData?.username, 
-          url: article.url,
-          platform: platform 
+          username: userData.username, 
+          url: article.url, 
+          platform 
         }),
       });
-    } catch (error) {
-      console.error("Error logging share event", error);
-    }
 
-    // Open share link in new window
-    window.open(shareLink, '_blank');
-    setActiveShareIndex(null);
+      const shareUrl = encodeURIComponent(article.url);
+      const shareTitle = encodeURIComponent(article.title);
+      const shareLinks = {
+        linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${shareUrl}`,
+        whatsapp: `https://wa.me/?text=${shareTitle}%20${shareUrl}`,
+        twitter: `https://twitter.com/intent/tweet?url=${shareUrl}&text=${shareTitle}`,
+        email: `mailto:?subject=${shareTitle}&body=Check%20out%20this%20article:%20${shareUrl}`,
+      };
+
+      if (shareLinks[platform]) {
+        window.open(shareLinks[platform], '_blank', 'noopener,noreferrer');
+        toggleShareOptions(article.url);
+      }
+    } catch (error) {
+      console.error("Error sharing article:", error);
+      alert("Failed to share article");
+    }
   };
 
   const fetchFilteredAndSearchedNews = async (searchTerm, filters) => {
     try {
-      const requestBody = searchTerm ? { search: searchTerm } : {};
-      if (filters) Object.assign(requestBody, filters);
+      const requestBody = { ...(searchTerm && { search: searchTerm }), ...(filters || {}) };
       const response = await fetch(`${process.env.REACT_APP_SERVER_URL}/news`, {
         method: "POST",
         headers: {
@@ -198,59 +192,44 @@ function Dashboard() {
       setNews(data || []);
       setCurrentPage(1);
     } catch (error) {
-      console.error("Error fetching news with combined criteria", error);
+      console.error("Error fetching filtered/searched news:", error);
       alert("Failed to fetch news");
     }
   };
 
   const handleSearch = async (e) => {
     e.preventDefault();
-    if (!searchQuery.trim()) {
-      clearSearch();
-      return;
-    }
+    if (!searchQuery.trim()) return clearSearch();
     setIsSearching(true);
-    fetchFilteredAndSearchedNews(searchQuery, isFiltering && activeFilters ? activeFilters : null);
+    await fetchFilteredAndSearchedNews(searchQuery, isFiltering ? activeFilters : null);
   };
 
   const clearSearch = async () => {
     setSearchQuery("");
     setIsSearching(false);
-    if (isFiltering && activeFilters) {
-      fetchFilteredAndSearchedNews(null, activeFilters);
-    } else {
-      fetchHeadlines();
-    }
+    await (isFiltering && activeFilters 
+      ? fetchFilteredAndSearchedNews(null, activeFilters) 
+      : fetchHeadlines());
   };
 
   const handleSearchInputChange = (e) => {
-    const newValue = e.target.value;
-    setSearchQuery(newValue);
-    
-    if (newValue === "") {
-      setIsSearching(false);
-      if (isFiltering && activeFilters) {
-        fetchFilteredAndSearchedNews(null, activeFilters);
-      } else {
-        fetchHeadlines();
-      }
-    }
+    const value = e.target.value;
+    setSearchQuery(value);
+    if (!value) clearSearch();
   };
 
   const handleApplyFilter = async (filters) => {
     setIsFiltering(true);
     setActiveFilters(filters);
-    fetchFilteredAndSearchedNews(isSearching && searchQuery ? searchQuery : null, filters);
+    await fetchFilteredAndSearchedNews(isSearching ? searchQuery : null, filters);
   };
 
   const handleClearFilters = async () => {
     setIsFiltering(false);
     setActiveFilters(null);
-    if (searchQuery.trim()) {
-      fetchFilteredAndSearchedNews(searchQuery, null);
-    } else {
-      fetchHeadlines();
-    }
+    await (searchQuery.trim() 
+      ? fetchFilteredAndSearchedNews(searchQuery, null) 
+      : fetchHeadlines());
   };
 
   const indexOfLastCard = currentPage * cardsPerPage;
@@ -292,9 +271,7 @@ function Dashboard() {
         </button>
       );
 
-      if (currentPage > 3) {
-        items.push(<span key="start-ellipsis" className="pagination-ellipsis">...</span>);
-      }
+      if (currentPage > 3) items.push(<span key="start-ellipsis" className="pagination-ellipsis">...</span>);
 
       const startPage = Math.max(2, currentPage - 1);
       const endPage = Math.min(totalPages - 1, currentPage + 1);
@@ -311,9 +288,7 @@ function Dashboard() {
         );
       }
 
-      if (currentPage < totalPages - 2) {
-        items.push(<span key="end-ellipsis" className="pagination-ellipsis">...</span>);
-      }
+      if (currentPage < totalPages - 2) items.push(<span key="end-ellipsis" className="pagination-ellipsis">...</span>);
 
       items.push(
         <button
@@ -325,13 +300,10 @@ function Dashboard() {
         </button>
       );
     }
-
     return items;
   };
 
-  if (isLoading) {
-    return <div className="loading-dashboard">Loading your news...</div>;
-  }
+  if (isLoading) return <div className="loading-dashboard">Loading your news...</div>;
 
   return (
     <div className="content-wrapper-dashboard">
@@ -384,14 +356,14 @@ function Dashboard() {
           {currentCards.length > 0 ? (
             currentCards.map((article, index) => (
               <article
-                key={index}
+                key={article.url || index} // Use unique URL if available
                 className="news-item-dashboard"
                 style={{ "--animation-index": index }}
               >
                 <h3>{article.title}</h3>
                 <p>{article.description}</p>
-                <p className="news-source-dashboard">
-                  <span>{article.source || "Unknown"}</span> |{" "}
+                <div className="news-source-dashboard">
+                  <span>{article.source || "Unknown"}</span> | 
                   <a
                     href={article.url}
                     target="_blank"
@@ -400,60 +372,60 @@ function Dashboard() {
                   >
                     Read More
                   </a>
-                </p>
+                </div>
                 <div className="news-actions-dashboard">
                   <button
                     className="news-action-btn-dashboard"
                     onClick={() => handleBookmark(article)}
+                    aria-label="Bookmark article"
                   >
                     <FaBookmark className="action-icon-dashboard" /> Bookmark
                   </button>
                   <button
                     className="news-action-btn-dashboard"
                     onClick={() => handleFlag(article)}
+                    aria-label="Flag article"
                   >
                     <FaFlag className="action-icon-dashboard" /> Flag
                   </button>
-                  <div className="share-container-dashboard">
-                    <button
-                      className="news-action-btn-dashboard share-btn-dashboard"
-                      onClick={() => handleShareToggle(index)}
-                    >
-                      <FaShareAlt className="action-icon-dashboard" /> Share
-                    </button>
-                    {activeShareIndex === index && (
-                      <div className="share-menu-dashboard">
-                        <button 
-                          className="share-option-dashboard" 
-                          onClick={() => handleShare(article, 'linkedin')}
-                          aria-label="Share on LinkedIn"
-                        >
-                          <FaLinkedin className="share-icon-dashboard linkedin" /> LinkedIn
-                        </button>
-                        <button 
-                          className="share-option-dashboard" 
-                          onClick={() => handleShare(article, 'whatsapp')}
-                          aria-label="Share on WhatsApp"
-                        >
-                          <FaWhatsapp className="share-icon-dashboard whatsapp" /> WhatsApp
-                        </button>
-                        <button 
-                          className="share-option-dashboard" 
-                          onClick={() => handleShare(article, 'twitter')}
-                          aria-label="Share on Twitter"
-                        >
-                          <FaTwitter className="share-icon-dashboard twitter" /> Twitter
-                        </button>
-                        <button 
-                          className="share-option-dashboard" 
-                          onClick={() => handleShare(article, 'email')}
-                          aria-label="Share via Email"
-                        >
-                          <FaEnvelope className="share-icon-dashboard email" /> Email
-                        </button>
-                      </div>
-                    )}
-                  </div>
+                  <button
+                    className={`news-action-btn-dashboard share-btn-dashboard ${showShareOptions[article.url] ? "show-share-options" : ""}`}
+                    onClick={() => toggleShareOptions(article.url)}
+                    ref={(el) => (shareButtonRefs.current[article.url] = el)}
+                    aria-label="Share article"
+                  >
+                    <FaShareAlt className="action-icon-dashboard" /> Share
+                    <div className="share-options">
+                      <button
+                        className="share-icon twitter"
+                        title="Share on Twitter"
+                        onClick={() => handleShare(article, "twitter")}
+                      >
+                        <FaTwitter />
+                      </button>
+                      <button
+                        className="share-icon whatsapp"
+                        title="Share on WhatsApp"
+                        onClick={() => handleShare(article, "whatsapp")}
+                      >
+                        <FaWhatsapp />
+                      </button>
+                      <button
+                        className="share-icon linkedin"
+                        title="Share on LinkedIn"
+                        onClick={() => handleShare(article, "linkedin")}
+                      >
+                        <FaLinkedin />
+                      </button>
+                      <button
+                        className="share-icon email"
+                        title="Share via Email"
+                        onClick={() => handleShare(article, "email")}
+                      >
+                        <FaEnvelope />
+                      </button>
+                    </div>
+                  </button>
                 </div>
               </article>
             ))
@@ -476,6 +448,7 @@ function Dashboard() {
               className="pagination-btn-dashboard"
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1}
+              aria-label="Previous page"
             >
               <FaAngleLeft />
             </button>
@@ -484,6 +457,7 @@ function Dashboard() {
               className="pagination-btn-dashboard"
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage === totalPages}
+              aria-label="Next page"
             >
               <FaAngleRight />
             </button>

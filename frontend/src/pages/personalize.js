@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import "./personalize.css";
 
-// handleReadMore function to increment view count
+// Handle read more to increment view count
 const handleReadMore = async (url) => {
   try {
     const response = await fetch(`${process.env.REACT_APP_SERVER_URL}/news/incrementviewcount`, {
@@ -11,16 +11,12 @@ const handleReadMore = async (url) => {
         "Content-Type": "application/json",
         Authorization: `Bearer ${localStorage.getItem("authToken")}`,
       },
-      body: JSON.stringify({
-        url: url,
-      }),
+      body: JSON.stringify({ url }),
     });
 
-    if (!response.ok) {
-      throw new Error("Failed to log read more event");
-    }
+    if (!response.ok) throw new Error("Failed to log read more event");
   } catch (error) {
-    console.error("Error logging read more event", error);
+    console.error("Error logging read more event:", error);
   }
 };
 
@@ -34,6 +30,7 @@ function PersonalizedNews() {
   const [showShareOptions, setShowShareOptions] = useState({});
   const navigate = useNavigate();
   const userData = JSON.parse(localStorage.getItem("user"));
+  const shareButtonRefs = useRef({}); // To handle click-outside for share options
 
   useEffect(() => {
     const fetchPersonalizedNews = async () => {
@@ -47,33 +44,25 @@ function PersonalizedNews() {
         const user = JSON.parse(localStorage.getItem("user"));
         const username = user?.username;
 
-        if (!username) {
-          console.error("Username not found in local storage");
-          return;
-        }
+        if (!username) throw new Error("Username not found in local storage");
 
         console.log("Fetching personalized news for:", username);
-        const response = await fetch(
-          `${process.env.REACT_APP_SERVER_URL}/news/preferred`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({ username }),
-          }
-        );
+        const response = await fetch(`${process.env.REACT_APP_SERVER_URL}/news/preferred`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ username }),
+        });
 
-        if (!response.ok) {
-          throw new Error("Failed to fetch personalized news");
-        }
+        if (!response.ok) throw new Error("Failed to fetch personalized news");
 
         const data = await response.json();
-        console.log("Fetched personalized news:", data ? data.length : 0, "articles");
+        console.log("Fetched personalized news:", data?.length || 0, "articles");
         setNews(data || []);
       } catch (error) {
-        console.error("Error fetching personalized news", error);
+        console.error("Error fetching personalized news:", error);
       } finally {
         setIsLoading(false);
       }
@@ -82,11 +71,29 @@ function PersonalizedNews() {
     fetchPersonalizedNews();
   }, [navigate]);
 
+  // Click outside handler to close share options
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      let isClickInsideShareButton = false;
+      Object.values(shareButtonRefs.current).forEach((ref) => {
+        if (ref && ref.contains(event.target)) {
+          isClickInsideShareButton = true;
+        }
+      });
+
+      if (!isClickInsideShareButton) {
+        setShowShareOptions({});
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   const handleBookmark = async (article) => {
-    if (!userData) {
-      console.error("User data is not available");
-      return;
-    }
+    if (!userData) return console.error("User data is not available");
     try {
       console.log("Bookmarking article:", article.title);
       await fetch(`${process.env.REACT_APP_SERVER_URL}/news/bookmark`, {
@@ -95,24 +102,17 @@ function PersonalizedNews() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("authToken")}`,
         },
-        body: JSON.stringify({
-          username: userData.username,
-          url: article.url,
-        }),
+        body: JSON.stringify({ username: userData.username, url: article.url }),
       });
       alert("Article bookmarked successfully!");
     } catch (error) {
-      console.error("Error bookmarking article", error);
+      console.error("Error bookmarking article:", error);
       alert("Failed to bookmark article");
     }
   };
 
   const handleFlag = async (article) => {
-    if (!userData) {
-      console.error("User data is not available");
-      return;
-    }
-
+    if (!userData) return console.error("User data is not available");
     try {
       console.log("Flagging article:", article.title);
       await fetch(`${process.env.REACT_APP_SERVER_URL}/news/reportarticle`, {
@@ -121,62 +121,36 @@ function PersonalizedNews() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("authToken")}`,
         },
-        body: JSON.stringify({
-          username: userData.username,
-          url: article.url,
-        }),
+        body: JSON.stringify({ username: userData.username, url: article.url }),
       });
-
-      // Remove the flagged article from the display
-      setNews(prevNews => prevNews.filter(item => item.url !== article.url));
-      
+      setNews((prevNews) => prevNews.filter((item) => item.url !== article.url));
       alert("Article flagged for review and removed from display!");
     } catch (error) {
-      console.error("Error flagging article", error);
+      console.error("Error flagging article:", error);
       alert("Failed to flag article");
     }
   };
 
   const toggleComments = (articleUrl) => {
-    setExpandedComments(prev => ({
-      ...prev,
-      [articleUrl]: !prev[articleUrl]
-    }));
-    // Close share options when opening comments
-    setShowShareOptions(prev => ({
-      ...prev,
-      [articleUrl]: false
-    }));
+    setExpandedComments((prev) => ({ ...prev, [articleUrl]: !prev[articleUrl] }));
+    setShowShareOptions((prev) => ({ ...prev, [articleUrl]: false }));
   };
 
   const handleCommentChange = (articleUrl, value) => {
-    setCommentInputs(prev => ({
-      ...prev,
-      [articleUrl]: value
-    }));
+    setCommentInputs((prev) => ({ ...prev, [articleUrl]: value }));
   };
 
-  // Improved date formatting function
   const formatDate = (dateString) => {
     if (!dateString) return "Unknown date";
-    
     try {
-      // Try to parse the date
       const date = new Date(dateString);
-      
-      // Check if date is valid
-      if (isNaN(date.getTime())) {
-        console.error("Invalid date:", dateString);
-        return "Invalid date";
-      }
-      
-      // Return formatted date with explicit options for better cross-browser compatibility
-      return date.toLocaleString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
+      if (isNaN(date.getTime())) return "Invalid date";
+      return date.toLocaleString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
       });
     } catch (error) {
       console.error("Error formatting date:", error);
@@ -185,27 +159,15 @@ function PersonalizedNews() {
   };
 
   const submitComment = async (article) => {
-    if (!userData) {
-      alert("Please login to comment");
-      return;
-    }
-
-    const comment = commentInputs[article.url];
-    if (!comment || comment.trim() === "") {
-      alert("Please enter a comment");
-      return;
-    }
+    if (!userData) return alert("Please login to comment");
+    const comment = commentInputs[article.url]?.trim();
+    if (!comment) return alert("Please enter a comment");
 
     try {
-      // Create timestamp
       const timestamp = new Date().toISOString();
-      
-      // Use formatDate function for consistency
       const formattedDate = formatDate(timestamp);
-      
-      // Append date to the comment content
       const commentWithDate = `${comment} [Posted on: ${formattedDate}]`;
-      
+
       const response = await fetch(`${process.env.REACT_APP_SERVER_URL}/news/analyzecomments`, {
         method: "POST",
         headers: {
@@ -215,13 +177,12 @@ function PersonalizedNews() {
         body: JSON.stringify({
           username: userData.username,
           url: article.url,
-          comment: commentWithDate,  // Send comment with date included
-          timestamp: timestamp       // Still send timestamp for sorting/identification
+          comment: commentWithDate,
+          timestamp,
         }),
       });
 
       const result = await response.json();
-      
       if (!response.ok) {
         if (response.status === 403 && result.message === "Negative Comment") {
           alert("Your comment was flagged as negative and was not posted.");
@@ -231,46 +192,32 @@ function PersonalizedNews() {
         return;
       }
 
-      // Add the new comment to the article
-      setNews(prevNews => prevNews.map(item => {
-        if (item.url === article.url) {
-          const updatedComments = [...(item.comments || []), {
-            username: userData.username,
-            comment: commentWithDate,  // Store comment with date included
-            timestamp: timestamp       // Keep timestamp for sorting
-          }];
-          return { ...item, comments: updatedComments };
-        }
-        return item;
-      }));
-
-      setCommentInputs(prev => ({
-        ...prev,
-        [article.url]: ""
-      }));
-
+      setNews((prevNews) =>
+        prevNews.map((item) =>
+          item.url === article.url
+            ? {
+                ...item,
+                comments: [...(item.comments || []), { username: userData.username, comment: commentWithDate, timestamp }],
+              }
+            : item
+        )
+      );
+      setCommentInputs((prev) => ({ ...prev, [article.url]: "" }));
       alert("Comment added successfully!");
     } catch (error) {
-      console.error("Error submitting comment", error);
+      console.error("Error submitting comment:", error);
       alert(error.message || "Failed to submit comment");
     }
   };
 
   const deleteComment = async (article, commentUsername, commentTimestamp) => {
-    if (!userData) {
-      alert("Please login to delete comments");
-      return;
-    }
-
-    // Check if the user is authorized to delete this comment
-    // Either it's their own comment OR they are an admin
+    if (!userData) return alert("Please login to delete comments");
     const isOwnComment = commentUsername === userData.username;
-    const isAdmin = userData.role === 'admin';
-    
-    if (!isOwnComment && !isAdmin) {
-      alert("You can only delete your own comments");
-      return;
-    }
+    const isAdmin = userData.role === "admin";
+    if (!isOwnComment && !isAdmin) return alert("You can only delete your own comments or comments as an admin");
+
+    const confirmDelete = window.confirm("Are you sure you want to delete this comment?");
+    if (!confirmDelete) return;
 
     try {
       const response = await fetch(`${process.env.REACT_APP_SERVER_URL}/news/deleteComment`, {
@@ -279,78 +226,54 @@ function PersonalizedNews() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("authToken")}`,
         },
-        body: JSON.stringify({
-          username: commentUsername, // The username of the comment owner
-          url: article.url,
-          timestamp: commentTimestamp // Include timestamp to identify the specific comment
-        }),
+        body: JSON.stringify({ username: commentUsername, url: article.url, timestamp: commentTimestamp }),
       });
 
-      if (!response.ok) {
-        const result = await response.json();
-        throw new Error(result.error || "Failed to delete comment");
-      }
+      if (!response.ok) throw new Error((await response.json()).error || "Failed to delete comment");
 
-      // Remove the specific comment from the article
-      setNews(prevNews => prevNews.map(item => {
-        if (item.url === article.url) {
-          const updatedComments = (item.comments || []).filter(
-            comment => !(comment.username === commentUsername && comment.timestamp === commentTimestamp)
-          );
-          return { ...item, comments: updatedComments };
-        }
-        return item;
-      }));
-
+      setNews((prevNews) =>
+        prevNews.map((item) =>
+          item.url === article.url
+            ? { ...item, comments: (item.comments || []).filter((c) => c.timestamp !== commentTimestamp) }
+            : item
+        )
+      );
       alert("Comment deleted successfully!");
     } catch (error) {
-      console.error("Error deleting comment", error);
+      console.error("Error deleting comment:", error);
       alert(error.message || "Failed to delete comment");
     }
   };
 
   const toggleShareOptions = (articleUrl) => {
-    setShowShareOptions(prev => ({
-      ...prev,
-      [articleUrl]: !prev[articleUrl]
-    }));
-    // Close comments when opening share options
-    setExpandedComments(prev => ({
-      ...prev,
-      [articleUrl]: false
-    }));
+    setShowShareOptions((prev) => {
+      const newState = {};
+      // Close all other share options
+      Object.keys(prev).forEach((key) => {
+        newState[key] = false;
+      });
+      // Toggle the clicked one
+      newState[articleUrl] = !prev[articleUrl];
+      return newState;
+    });
+    setExpandedComments((prev) => ({ ...prev, [articleUrl]: false }));
   };
 
   const handleShare = async (article, platform) => {
-    if (!userData) {
-      alert("Please login to share articles");
-      return;
-    }
-
+    if (!userData) return alert("Please login to share articles");
     try {
-      // Record share analytics
       await fetch(`${process.env.REACT_APP_SERVER_URL}/news/share`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("authToken")}`,
         },
-        body: JSON.stringify({
-          username: userData.username,
-          url: article.url,
-          platform: platform
-        }),
+        body: JSON.stringify({ username: userData.username, url: article.url, platform }),
       });
-
-      // Generate share links
-      const shareUrl = generateShareUrl(article, platform);
-      window.open(shareUrl, '_blank', 'noopener,noreferrer');
-      
-      // Close share options after sharing
+      window.open(generateShareUrl(article, platform), "_blank", "noopener,noreferrer");
       toggleShareOptions(article.url);
-      
     } catch (error) {
-      console.error("Error sharing article", error);
+      console.error("Error sharing article:", error);
       alert("Failed to share article");
     }
   };
@@ -359,22 +282,20 @@ function PersonalizedNews() {
     const encodedTitle = encodeURIComponent(article.title);
     const encodedUrl = encodeURIComponent(article.url);
     const encodedText = encodeURIComponent(`${article.title} - ${article.url}`);
-
     switch (platform) {
-      case 'twitter':
+      case "twitter":
         return `https://twitter.com/intent/tweet?text=${encodedTitle}&url=${encodedUrl}`;
-      case 'whatsapp':
+      case "whatsapp":
         return `https://wa.me/?text=${encodedText}`;
-      case 'linkedin':
+      case "linkedin":
         return `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`;
-      case 'email':
+      case "email":
         return `mailto:?subject=${encodedTitle}&body=Check out this article: ${encodedUrl}`;
       default:
         return article.url;
     }
   };
 
-  // Pagination Logic
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentNews = news.slice(indexOfFirstItem, indexOfLastItem);
@@ -385,7 +306,6 @@ function PersonalizedNews() {
   const getPaginationItems = () => {
     const items = [];
     const maxPagesToShow = 5;
-
     if (totalPages <= maxPagesToShow) {
       for (let i = 1; i <= totalPages; i++) {
         items.push(
@@ -400,38 +320,21 @@ function PersonalizedNews() {
       }
     } else {
       items.push(
-        <button
-          key={1}
-          onClick={() => paginate(1)}
-          className={`pagination-btn ${currentPage === 1 ? "active" : ""}`}
-        >
+        <button key={1} onClick={() => paginate(1)} className={`pagination-btn ${currentPage === 1 ? "active" : ""}`}>
           1
         </button>
       );
-
-      if (currentPage > 3) {
-        items.push(<span key="start-ellipsis" className="pagination-ellipsis">...</span>);
-      }
-
+      if (currentPage > 3) items.push(<span key="start-ellipsis" className="pagination-ellipsis">...</span>);
       const startPage = Math.max(2, currentPage - 1);
       const endPage = Math.min(totalPages - 1, currentPage + 1);
-
       for (let i = startPage; i <= endPage; i++) {
         items.push(
-          <button
-            key={i}
-            onClick={() => paginate(i)}
-            className={`pagination-btn ${currentPage === i ? "active" : ""}`}
-          >
+          <button key={i} onClick={() => paginate(i)} className={`pagination-btn ${currentPage === i ? "active" : ""}`}>
             {i}
           </button>
         );
       }
-
-      if (currentPage < totalPages - 2) {
-        items.push(<span key="end-ellipsis" className="pagination-ellipsis">...</span>);
-      }
-
+      if (currentPage < totalPages - 2) items.push(<span key="end-ellipsis" className="pagination-ellipsis">...</span>);
       items.push(
         <button
           key={totalPages}
@@ -442,13 +345,10 @@ function PersonalizedNews() {
         </button>
       );
     }
-
     return items;
   };
 
-  if (isLoading) {
-    return <div className="loading-personalize">Loading personalized news...</div>;
-  }
+  if (isLoading) return <div className="loading-personalize">Loading personalized news...</div>;
 
   return (
     <div className="personalized-news-container-personalize">
@@ -456,21 +356,12 @@ function PersonalizedNews() {
       <div className="news-list-personalize">
         {currentNews.length > 0 ? (
           currentNews.map((article, index) => (
-            <div 
-              key={index} 
-              className={`news-item-personalize ${showShareOptions[article.url] ? "show-share-options" : ""}`}
-            >
+            <div key={index} className="news-item-personalize">
               <h3>{article.title}</h3>
               <p>{article.description}</p>
               <p className="news-source-personalize">
-                Source: {article.source || "Unknown"} |
-                <a
-                  href={article.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => handleReadMore(article.url)}
-                >
-                  {" "}
+                Source: {article.source || "Unknown"} |{" "}
+                <a href={article.url} target="_blank" rel="noopener noreferrer" onClick={() => handleReadMore(article.url)}>
                   Read more
                 </a>
               </p>
@@ -484,85 +375,28 @@ function PersonalizedNews() {
                 <button onClick={() => toggleComments(article.url)}>
                   <i className="fas fa-comment"></i> {expandedComments[article.url] ? "Hide Comments" : "Comments"}
                 </button>
-                <button onClick={() => toggleShareOptions(article.url)}>
+                <button
+                  className={`share-btn-container ${showShareOptions[article.url] ? "show-share-options" : ""}`}
+                  onClick={() => toggleShareOptions(article.url)}
+                  ref={(el) => (shareButtonRefs.current[article.url] = el)}
+                >
                   <i className="fas fa-share-alt"></i> Share
-                </button>
-              </div>
-
-              {/* Share Options */}
-              <div className={`share-options ${showShareOptions[article.url] ? "active" : ""}`}>
-                <div className="share-buttons">
-                  <button 
-                    className="share-btn twitter"
-                    onClick={() => handleShare(article, 'twitter')}
-                  >
-                    <i className="fab fa-twitter"></i> Twitter
-                  </button>
-                  <button 
-                    className="share-btn whatsapp"
-                    onClick={() => handleShare(article, 'whatsapp')}
-                  >
-                    <i className="fab fa-whatsapp"></i> WhatsApp
-                  </button>
-                  <button 
-                    className="share-btn linkedin"
-                    onClick={() => handleShare(article, 'linkedin')}
-                  >
-                    <i className="fab fa-linkedin"></i> LinkedIn
-                  </button>
-                  <button 
-                    className="share-btn email"
-                    onClick={() => handleShare(article, 'email')}
-                  >
-                    <i className="fas fa-envelope"></i> Email
-                  </button>
-                </div>
-              </div>
-
-              {/* Comments Section */}
-              {expandedComments[article.url] && (
-                <div className="news-comments-section">
-                  <h4>Comments</h4>
-                  
-                  <div className="comments-list">
-                    {article.comments && article.comments.length > 0 ? (
-                      article.comments
-                        .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
-                        .map((comment, commentIndex) => (
-                        <div key={commentIndex} className="comment-item">
-                          <div className="comment-header">
-                            <p className="comment-username">{comment.username}</p>
-                            {/* No longer need to display date separately as it's in the comment */}
-                          </div>
-                          <p className="comment-text">{comment.comment}</p>
-                          {/* Show delete button only for the comment owner or admin */}
-                          {(comment.username === userData?.username || userData?.role === 'admin') && (
-                            <button 
-                              className="delete-comment-btn"
-                              onClick={() => deleteComment(article, comment.username, comment.timestamp)}
-                            >
-                              <i className="fas fa-trash"></i> Delete
-                            </button>
-                          )}
-                        </div>
-                      ))
-                    ) : (
-                      <p>No comments yet. Be the first to comment!</p>
-                    )}
-                  </div>
-
-                  <div className="add-comment-section">
-                    <textarea
-                      placeholder="Add your comment..."
-                      value={commentInputs[article.url] || ""}
-                      onChange={(e) => handleCommentChange(article.url, e.target.value)}
-                    />
-                    <button onClick={() => submitComment(article)}>
-                      <i className="fas fa-paper-plane"></i> Post Comment
+                  <div className="share-options">
+                    <button className="share-icon twitter" title="Share on Twitter" onClick={() => handleShare(article, "twitter")}>
+                      <i className="fab fa-twitter"></i>
+                    </button>
+                    <button className="share-icon whatsapp" title="Share on WhatsApp" onClick={() => handleShare(article, "whatsapp")}>
+                      <i className="fab fa-whatsapp"></i>
+                    </button>
+                    <button className="share-icon linkedin" title="Share on LinkedIn" onClick={() => handleShare(article, "linkedin")}>
+                      <i className="fab fa-linkedin"></i>
+                    </button>
+                    <button className="share-icon email" title="Share via Email" onClick={() => handleShare(article, "email")}>
+                      <i className="fas fa-envelope"></i>
                     </button>
                   </div>
-                </div>
-              )}
+                </button>
+              </div>
             </div>
           ))
         ) : (
@@ -570,22 +404,64 @@ function PersonalizedNews() {
         )}
       </div>
 
-      {/* Pagination Controls */}
+      {Object.keys(expandedComments).map(
+        (articleUrl) =>
+          expandedComments[articleUrl] && (
+            <div key={articleUrl} className="comments-overlay">
+              <div className="comments-card">
+                <button className="close-comments-btn" onClick={() => toggleComments(articleUrl)}>
+                  <i className="fas fa-times"></i> Close
+                </button>
+                <div className="news-comments-section">
+                  <h4>Comments for: {news.find((item) => item.url === articleUrl)?.title}</h4>
+                  <div className="comments-list">
+                    {news.find((item) => item.url === articleUrl)?.comments?.length > 0 ? (
+                      news
+                        .find((item) => item.url === articleUrl)
+                        .comments.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+                        .map((comment, commentIndex) => (
+                          <div key={commentIndex} className="comment-item">
+                            <div className="comment-header">
+                              <p className="comment-username">{comment.username}</p>
+                            </div>
+                            <p className="comment-text">{comment.comment}</p>
+                            {(comment.username === userData?.username || userData?.role === "admin") && (
+                              <button
+                                className="delete-comment-btn"
+                                onClick={() => deleteComment(news.find((item) => item.url === articleUrl), comment.username, comment.timestamp)}
+                              >
+                                <i className="fas fa-trash"></i> Delete
+                              </button>
+                            )}
+                          </div>
+                        ))
+                    ) : (
+                      <p>No comments yet. Be the first to comment!</p>
+                    )}
+                  </div>
+                  <div className="add-comment-section">
+                    <textarea
+                      placeholder="Add your comment..."
+                      value={commentInputs[articleUrl] || ""}
+                      onChange={(e) => handleCommentChange(articleUrl, e.target.value)}
+                    />
+                    <button onClick={() => submitComment(news.find((item) => item.url === articleUrl))}>
+                      <i className="fas fa-paper-plane"></i> Post Comment
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )
+      )}
+
       {news.length > itemsPerPage && (
         <div className="pagination-personalize">
-          <button
-            onClick={() => paginate(currentPage - 1)}
-            disabled={currentPage === 1}
-            className="pagination-btn"
-          >
+          <button onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1} className="pagination-btn">
             Previous
           </button>
           {getPaginationItems()}
-          <button
-            onClick={() => paginate(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className="pagination-btn"
-          >
+          <button onClick={() => paginate(currentPage + 1)} disabled={currentPage === totalPages} className="pagination-btn">
             Next
           </button>
         </div>
