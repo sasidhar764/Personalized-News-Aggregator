@@ -10,65 +10,113 @@ const QuizPage = () => {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const user = JSON.parse(localStorage.getItem('user'));
-    if (!user || !user.username) {
-      navigate('/login');
-      return;
-    }
+  // ...existing code...
 
-    const loadQuiz = async () => {
-      try {
-        const res = await axios.post(`${process.env.REACT_APP_SERVER_URL}/quiz/fetch`, { username: user.username });
-        setQuestions(res.data.questions);
-      } catch (err) {
-        console.error("Failed to load quiz:", err);
-        setError("Could not load quiz. Please try again later.");
-      } finally {
-        setLoading(false);
+useEffect(() => {
+  const user = JSON.parse(localStorage.getItem('user'));
+  if (!user || !user.username) {
+    navigate('/login');
+    return;
+  }
+
+  const checkQuizStatus = async () => {
+    try {
+      const checkResponse = await axios.post(
+        `${process.env.REACT_APP_SERVER_URL}/quiz/status`,
+        { username: user.username },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${user.token}`
+          }
+        }
+      );
+
+      // If user has completed quiz for current week
+      if (checkResponse.data.hasCompletedWeekly) {
+        navigate('/result', {
+          state: {
+            weeklyScore: checkResponse.data.weeklyScore,
+            total: checkResponse.data.totalQuestions,
+            weekNumber: checkResponse.data.weekNumber
+          },
+          replace: true
+        });
+        return true;
       }
-    };
-
-    loadQuiz();
-  }, [navigate]);
-
-  const handleOptionChange = (questionId, option) => {
-    setSelectedAnswers(prev => ({ ...prev, [questionId]: option }));
+      return false;
+    } catch (err) {
+      console.error("Failed to check quiz status:", err);
+      setError("Error checking quiz status. Please try again.");
+      setLoading(false);
+      return false;
+    }
   };
+
+  const loadQuiz = async () => {
+    const hasCompleted = await checkQuizStatus();
+    if (hasCompleted) return;
+
+    try {
+      // Only fetch new quiz if user hasn't completed this week's quiz
+      const res = await axios.post(
+        `${process.env.REACT_APP_SERVER_URL}/quiz/fetch`, 
+        { username: user.username },
+        {
+          headers: {
+            'Authorization': `Bearer ${user.token}`
+          }
+        }
+      );
+
+      if (!res.data.questions || res.data.questions.length === 0) {
+        throw new Error("No quiz questions available");
+      }
+      
+      setQuestions(res.data.questions);
+    } catch (err) {
+      console.error("Failed to load quiz:", err);
+      setError("Could not load quiz. Please try again later.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  loadQuiz();
+}, [navigate]);
+
 
   const handleSubmit = async () => {
     const user = JSON.parse(localStorage.getItem('user'));
-    try {
-      const unansweredQuestions = questions.filter(q => !selectedAnswers[q._id]);
-      if (unansweredQuestions.length > 0) {
-        alert("Please answer all questions before submitting.");
-        console.warn("Unanswered questions detected:", unansweredQuestions);
-        return;
-      }
+    const unanswered = questions.filter(q => !selectedAnswers[q._id]);
+    if (unanswered.length > 0) {
+      alert("Please answer all questions before submitting.");
+      return;
+    }
 
+    try {
       const answersArray = questions.map(q => selectedAnswers[q._id]);
-      console.log("Submitting quiz for username:", user.username, "Answers:", answersArray);
 
       const response = await axios.post(`${process.env.REACT_APP_SERVER_URL}/quiz/submit`, {
         username: user.username,
         answers: answersArray,
-        questions,
       });
 
-      if (response.data.message === "You have already submitted the quiz for this week.") {
-        alert(`You have already submitted the quiz for this week. Your score: ${response.data.score}/${response.data.total}`);
-      } else {
-        console.info(`Quiz submitted successfully. Score: ${response.data.score}/${response.data.total}`);
-        navigate('/result', { state: { score: response.data.score, total: response.data.total } });
-      }
+      navigate('/result', {
+        state: {
+          score: response.data.score,
+          total: response.data.total,
+          results: response.data.results
+        }
+      });
     } catch (err) {
       console.error("Failed to submit quiz:", err);
-      let errorMessage = "Failed to submit quiz. Please try again.";
-      if (err.response?.data?.message) {
-        errorMessage = err.response.data.message;
-      }
-      setError(errorMessage);
+      setError("Failed to submit quiz. Please try again.");
     }
+  };
+
+  const handleOptionChange = (questionId, option) => {
+    setSelectedAnswers(prev => ({ ...prev, [questionId]: option }));
   };
 
   if (loading) return <p>Loading quiz...</p>;
@@ -81,15 +129,15 @@ const QuizPage = () => {
         <p>No quiz questions available.</p>
       ) : (
         questions.map((q, index) => (
-          <div 
-            key={q._id} 
+          <div
+            key={q._id}
             className={`question-container ${index % 2 === 0 ? 'even' : 'odd'}`}
           >
             <p className="question-text">{index + 1}. {q.question}</p>
             <div className="options-grid">
               {q.options.map((option, i) => (
-                <label 
-                  key={i} 
+                <label
+                  key={i}
                   className={`option-label ${
                     selectedAnswers[q._id] === option ? 'selected' : ''
                   }`}

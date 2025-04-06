@@ -6,9 +6,14 @@ import './ResultPage.css';
 const ResultPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { score, total } = location.state || {};
-  const [result, setResult] = useState({ score, total });
-  const [loading, setLoading] = useState(!score || !total);
+
+  const [result, setResult] = useState({
+    score: location.state?.score || null,
+    total: location.state?.total || null,
+    results: location.state?.results || [],
+  });
+
+  const [loading, setLoading] = useState(result.score === null || result.total === null);
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -18,15 +23,17 @@ const ResultPage = () => {
       return;
     }
 
-    if (!score || !total) {
+    if (loading) {
       const fetchResult = async () => {
         try {
           const response = await axios.post(`${process.env.REACT_APP_SERVER_URL}/quiz/result`, {
             username: user.username,
           });
+
           setResult({
             score: response.data.score,
             total: response.data.total,
+            results: response.data.results || [],
           });
         } catch (err) {
           console.error("Failed to fetch result:", err);
@@ -35,33 +42,38 @@ const ResultPage = () => {
           setLoading(false);
         }
       };
-      fetchResult();
-    } else {
-      setLoading(false);
-    }
-  }, [navigate, score, total]);
 
-  if (loading) return <p>Loading results...</p>;
+      fetchResult();
+    }
+  }, [loading, navigate]);
+
+  if (loading) return <p className="loading-message">Loading results...</p>;
   if (error) return <p className="error-message">{error}</p>;
-  if (result.score === undefined || result.total === undefined) {
-    return (
-      <div className="result-container">
-        <p>Invalid access to result page. Please take the quiz first.</p>
-        <button onClick={() => navigate('/quiz')} className="retry-button">
-          Go to Quiz
-        </button>
-      </div>
-    );
-  }
 
   return (
     <div className="result-container">
-      <h2 className="result-title">Quiz Results</h2>
-      <p className="result-score">
-        You scored {result.score} out of {result.total}!
-      </p>
+      <h2 className="result-title"> Quiz Results</h2>
+      <p className="result-score">You scored {result.score} out of {result.total}!</p>
+
+      <h3 style={{ fontWeight: '700', fontSize: '1.5rem', marginBottom: '1rem' }}> Detailed Results</h3>
+
+      <div className="detailed-results">
+        {result.results.map((r, index) => (
+          <div
+            key={index}
+            className={`result-question-card ${r.isCorrect ? 'correct' : ''}`}
+          >
+            <p className="question-text">Q{index + 1}: {r.question}</p>
+            <p className="your-answer"><strong>Your Answer:</strong> {r.selected || 'No answer selected'}</p>
+            {!r.isCorrect && (
+              <p className="correct-answer"><strong>Correct Answer:</strong> {r.correctAnswer}</p>
+            )}
+          </div>
+        ))}
+      </div>
+
       <button onClick={() => navigate('/')} className="home-button">
-        Go to Home
+         Go to Home
       </button>
     </div>
   );

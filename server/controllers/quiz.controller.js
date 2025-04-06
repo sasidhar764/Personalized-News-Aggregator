@@ -17,7 +17,6 @@ const fetchQuiz = async (req, res) => {
     }
 
     let questions = [];
-    // Fetch up to 5 questions per category
     for (const category of categories) {
       const categoryQuestions = await Quiz.find({ category, language }).limit(5);
       questions = questions.concat(categoryQuestions);
@@ -54,7 +53,6 @@ const submitQuiz = async (req, res) => {
     const language = user.language;
 
     let questions = [];
-    // Fetch up to 5 questions per category
     for (const category of categories) {
       const categoryQuestions = await Quiz.find({ category, language }).limit(5);
       questions = questions.concat(categoryQuestions);
@@ -80,7 +78,8 @@ const submitQuiz = async (req, res) => {
       username,
       week: currentWeek,
       score: correctCount,
-      total: questions.length
+      total: questions.length,
+      results // <-- **Store the detailed result**
     });
 
     await newQuizStatus.save();
@@ -89,7 +88,7 @@ const submitQuiz = async (req, res) => {
       message: "Quiz submitted",
       score: correctCount,
       total: questions.length,
-      results
+      results // <-- **Send the detailed result to frontend**
     });
 
   } catch (err) {
@@ -104,5 +103,53 @@ const getCurrentWeek = () => {
   const diff = (now - start) + ((start.getTimezoneOffset() - now.getTimezoneOffset()) * 60000);
   return Math.floor(diff / (1000 * 60 * 60 * 24 * 7));
 };
+const checkQuizStatus = async (req, res) => {
+  try {
+    const { username } = req.body;
+    if (!username) return res.status(400).json({ message: "Username required" });
 
-module.exports = { fetchQuiz, submitQuiz };
+    const currentWeek = getCurrentWeek();
+
+    const quizStatus = await UserQuizStatus.findOne({ username, week: currentWeek });
+
+    if (quizStatus) {
+      return res.json({
+        hasCompletedWeekly: true,
+        weeklyScore: quizStatus.score,
+        totalQuestions: quizStatus.total,
+        weekNumber: currentWeek
+      });
+    } else {
+      return res.json({ hasCompletedWeekly: false });
+    }
+  } catch (err) {
+    console.error("Error checking quiz status:", err);
+    return res.status(500).json({ message: "Error checking quiz status" });
+  }
+};
+const getQuizResult = async (req, res) => {
+  try {
+    const { username } = req.body;
+    if (!username) return res.status(400).json({ message: "Username required" });
+
+    const currentWeek = getCurrentWeek();
+    const result = await UserQuizStatus.findOne({ username, week: currentWeek });
+
+    if (!result) {
+      return res.status(404).json({ message: "Result not found for current week" });
+    }
+
+    return res.json({
+      score: result.score,
+      total: result.total,
+      results: result.results
+    });
+
+  } catch (err) {
+    console.error("Error fetching quiz result:", err);
+    return res.status(500).json({ message: "Error fetching quiz result" });
+  }
+};
+
+
+module.exports = { fetchQuiz, submitQuiz, checkQuizStatus, getQuizResult };
