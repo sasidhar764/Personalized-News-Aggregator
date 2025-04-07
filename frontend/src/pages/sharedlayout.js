@@ -12,6 +12,7 @@ import {
   FaStar,
   FaQuestionCircle,
   FaComment,
+  FaClipboardList,
 } from "react-icons/fa";
 import ChatBot from "./chatbot";
 
@@ -145,6 +146,7 @@ function SharedLayout() {
               }`}
               onClick={() => navigate("/adminfeedback")}
             >
+              <FaClipboardList className="nav-icon" />
               {navOpen && <span className="nav-label">Feedback Review</span>}
             </div>
           )}
